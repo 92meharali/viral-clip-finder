@@ -1,0 +1,3 @@
+[00:00:13] Player A: I didn't kill him.
+[00:00:19] Player B: You're lying.
+[00:00:24] Player A: Then who did?
