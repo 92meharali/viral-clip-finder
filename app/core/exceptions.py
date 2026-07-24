@@ -59,3 +59,7 @@ class MetadataGenerationError(ViralReelError):
 
 class QualityCheckError(ViralReelError):
     """Raised when quality checking cannot be performed."""
+
+
+class BatchExportError(ViralReelError):
+    """Raised when batch export fails."""

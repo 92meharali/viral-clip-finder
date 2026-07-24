@@ -14,7 +14,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 | 6 | Subtitle generation | Done |
 | 7 | Metadata generation | Done |
 | 8 | Quality checks | Done |
-| 9 | Batch export mode | Planned |
+| 9 | Batch export mode | Done |
 
 ## Tech Stack
 
@@ -22,7 +22,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 - **FastAPI** + **Pydantic** for the API layer (coming soon)
 - **OpenAI SDK** for viral moment detection (Phase 2)
 - **FFmpeg** for video processing (Phase 4+)
-- **Typer** for CLI (coming soon)
+- **Typer** for CLI
 - **pytest** for testing, **ruff** / **black** / **mypy** for code quality
 
 ## Quick Start
@@ -248,6 +248,42 @@ for rejection in report.rejected:
 ```
 
 See [docs/quality_checks.md](docs/quality_checks.md) for full module documentation.
+
+## Phase 9: Batch Export Mode
+
+Run the complete pipeline with one command — from transcript to upload-ready folder.
+
+### CLI
+
+```bash
+uv run viral-reel export \
+  --video game_night.mp4 \
+  --transcript transcript.txt \
+  --output output/ \
+  --top-n 5
+
+# Optional flags
+uv run viral-reel export -v game.mp4 -t transcript.txt --blur --burn-subtitles
+```
+
+### Python API
+
+```python
+from app.services.batch_exporter import BatchExportOptions, run_batch_export
+
+result = run_batch_export(
+    "game_night.mp4",
+    "transcript.txt",
+    output_dir="output",
+    options=BatchExportOptions(top_n=5, blurred_background=True),
+)
+
+print(result.manifest.manifest_path)  # output/manifest.json
+```
+
+Output folder contains videos, SRT files, per-clip metadata JSON, and a master `manifest.json`.
+
+See [docs/batch_export.md](docs/batch_export.md) for full module documentation.
 
 ## Project Structure
 
