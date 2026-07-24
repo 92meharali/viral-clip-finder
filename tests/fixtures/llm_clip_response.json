@@ -1,0 +1,22 @@
+{
+  "clips": [
+    {
+      "start": "00:00:13",
+      "end": "00:00:45",
+      "reason": "A major alliance falls apart during a heated accusation.",
+      "viral_score": 9.7,
+      "emotion": "betrayal",
+      "hook": "He trusted the wrong player.",
+      "summary": "Player A is accused of lying and the group turns on them."
+    },
+    {
+      "start": "00:01:30",
+      "end": "00:02:15",
+      "reason": "Unexpected vote flip creates suspense.",
+      "viral_score": 8.5,
+      "emotion": "suspense",
+      "hook": "Nobody saw this vote coming.",
+      "summary": "The final vote surprises everyone and changes the game."
+    }
+  ]
+}

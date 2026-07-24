@@ -55,7 +55,7 @@ def parse_timestamp(timestamp: str) -> float:
         seconds = int(match.group("short_seconds"))
         millis = match.group("short_millis")
 
-    total = hours * 3600 + minutes * 60 + seconds
+    total: float = float(hours * 3600 + minutes * 60 + seconds)
     if millis:
         total += int(millis.ljust(3, "0")[:3]) / 1000
 

@@ -7,7 +7,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 | Phase | Feature | Status |
 |-------|---------|--------|
 | 1 | Transcript processing | Done |
-| 2 | LLM viral moment analysis | Planned |
+| 2 | LLM viral moment analysis | Done |
 | 3 | Clip ranking | Planned |
 | 4 | Video cutting (FFmpeg) | Planned |
 | 5 | Vertical cropping | Planned |
@@ -86,6 +86,42 @@ segments = parse_transcript_file("transcript.txt")
 ```
 
 See [docs/transcript_processing.md](docs/transcript_processing.md) for full module documentation.
+
+## Phase 2: LLM Viral Moment Analysis
+
+The clip analyzer sends parsed transcript segments to OpenAI and returns ranked viral clip candidates with hooks, emotions, and scores.
+
+### Usage
+
+```python
+from app.services.transcript_parser import parse_transcript_file
+from app.llm.analyzer import analyze_transcript
+
+segments = parse_transcript_file("transcript.txt")
+clips = analyze_transcript(segments)
+
+for clip in clips:
+    print(clip.model_dump())
+# {
+#   'start': '00:00:13', 'end': '00:00:45',
+#   'viral_score': 9.7, 'emotion': 'betrayal',
+#   'hook': 'He trusted the wrong player.', ...
+# }
+```
+
+### Configuration
+
+Set your OpenAI API key in `.env`:
+
+```bash
+OPENAI_API_KEY=sk-your-key-here
+OPENAI_MODEL=gpt-4o
+MAX_CLIPS=10
+```
+
+Prompts are stored in `app/prompts/` and loaded at runtime — never hardcoded.
+
+See [docs/llm_analysis.md](docs/llm_analysis.md) for full module documentation.
 
 ## Project Structure
 
