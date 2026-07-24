@@ -43,3 +43,7 @@ class VerticalCropError(ViralReelError):
     def __init__(self, message: str, *, source_path: str | None = None) -> None:
         self.source_path = source_path
         super().__init__(message)
+
+
+class SubtitleError(ViralReelError):
+    """Raised when subtitle generation or burning fails."""

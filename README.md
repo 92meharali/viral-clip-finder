@@ -11,7 +11,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 | 3 | Clip ranking | Done |
 | 4 | Video cutting (FFmpeg) | Done |
 | 5 | Vertical cropping | Done |
-| 6 | Subtitle generation | Planned |
+| 6 | Subtitle generation | Done |
 | 7 | Metadata generation | Planned |
 | 8 | Quality checks | Planned |
 | 9 | Batch export mode | Planned |
@@ -190,6 +190,27 @@ for clip in vertical:
 ```
 
 See [docs/vertical_cropping.md](docs/vertical_cropping.md) for full module documentation.
+
+## Phase 6: Subtitle Generation
+
+Generate SRT caption files from transcript timestamps and optionally burn styled subtitles into videos.
+
+### Usage
+
+```python
+from app.video.subtitles import generate_subtitles
+from app.video.subtitle_burner import burn_subtitles
+from app.models.subtitle import SubtitleStyle, SubtitlePosition
+
+# Generate SRT files aligned to clip windows
+subtitles = generate_subtitles(segments, extracted, output_dir="output")
+
+# Burn subtitles into vertical video (optional)
+style = SubtitleStyle(size=28, color="white", position=SubtitlePosition.BOTTOM)
+burn_subtitles(vertical[0].output_path, subtitles[0].srt_path, style=style)
+```
+
+See [docs/subtitle_generation.md](docs/subtitle_generation.md) for full module documentation.
 
 ## Project Structure
 

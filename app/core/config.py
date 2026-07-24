@@ -42,6 +42,14 @@ class Settings(BaseSettings):
         default=20, ge=1, description="Box blur strength for blurred background mode"
     )
 
+    subtitle_font: str = Field(default="Arial", description="Subtitle font for burn-in")
+    subtitle_size: int = Field(default=24, ge=8, le=96, description="Subtitle font size")
+    subtitle_outline: int = Field(default=2, ge=0, le=10, description="Subtitle outline thickness")
+    subtitle_color: str = Field(default="white", description="Subtitle text color")
+    subtitle_position: str = Field(
+        default="bottom", description="Subtitle position: top, center, or bottom"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:
