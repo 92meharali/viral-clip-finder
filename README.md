@@ -10,7 +10,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 | 2 | LLM viral moment analysis | Done |
 | 3 | Clip ranking | Done |
 | 4 | Video cutting (FFmpeg) | Done |
-| 5 | Vertical cropping | Planned |
+| 5 | Vertical cropping | Done |
 | 6 | Subtitle generation | Planned |
 | 7 | Metadata generation | Planned |
 | 8 | Quality checks | Planned |
@@ -169,6 +169,27 @@ for clip in extracted:
 Supports **MP4**, **MOV**, and **MKV** source formats.
 
 See [docs/video_cutting.md](docs/video_cutting.md) for full module documentation.
+
+## Phase 5: Vertical Cropping
+
+Convert clips to 1080×1920 vertical format for TikTok, Instagram Reels, and YouTube Shorts.
+
+### Usage
+
+```python
+from app.video.cropper import crop_to_vertical
+
+# Center crop (default) — best for landscape with centered action
+vertical = crop_to_vertical(extracted, output_dir="output")
+
+# Blurred background — keeps full frame visible with cinematic blur
+vertical = crop_to_vertical(extracted, blurred_background=True)
+
+for clip in vertical:
+    print(clip.output_path)  # output/clip1_vertical.mp4, ...
+```
+
+See [docs/vertical_cropping.md](docs/vertical_cropping.md) for full module documentation.
 
 ## Project Structure
 

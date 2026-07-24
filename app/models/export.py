@@ -20,3 +20,17 @@ class ExtractedClip(BaseModel):
     )
 
     model_config = {"frozen": True}
+
+
+class VerticalClip(BaseModel):
+    """Metadata for a vertically cropped clip ready for short-form platforms."""
+
+    index: int = Field(..., ge=1, description="1-based clip number")
+    source_path: str = Field(..., description="Path to the input clip video")
+    output_path: str = Field(..., description="Path to the vertical output file")
+    width: int = Field(..., ge=1, description="Output video width in pixels")
+    height: int = Field(..., ge=1, description="Output video height in pixels")
+    blurred_background: bool = Field(..., description="Whether a blurred background was applied")
+    crop_mode: str = Field(..., description="Crop strategy used (center_crop or blur_background)")
+
+    model_config = {"frozen": True}

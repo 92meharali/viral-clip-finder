@@ -36,6 +36,12 @@ class Settings(BaseSettings):
     ffmpeg_path: str = Field(default="ffmpeg", description="Path to the ffmpeg binary")
     ffprobe_path: str = Field(default="ffprobe", description="Path to the ffprobe binary")
 
+    vertical_width: int = Field(default=1080, ge=1, description="Target vertical video width")
+    vertical_height: int = Field(default=1920, ge=1, description="Target vertical video height")
+    vertical_blur_strength: int = Field(
+        default=20, ge=1, description="Box blur strength for blurred background mode"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:

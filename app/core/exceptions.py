@@ -35,3 +35,11 @@ class VideoCutError(ViralReelError):
     def __init__(self, message: str, *, source_path: str | None = None) -> None:
         self.source_path = source_path
         super().__init__(message)
+
+
+class VerticalCropError(ViralReelError):
+    """Raised when vertical cropping fails."""
+
+    def __init__(self, message: str, *, source_path: str | None = None) -> None:
+        self.source_path = source_path
+        super().__init__(message)

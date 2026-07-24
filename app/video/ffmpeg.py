@@ -101,6 +101,61 @@ def probe_duration(path: Path, settings: Settings | None = None) -> float:
         raise VideoCutError(f"Invalid duration from ffprobe for: {path}") from exc
 
 
+def probe_dimensions(path: Path, settings: Settings | None = None) -> tuple[int, int]:
+    """Get video width and height in pixels using ffprobe.
+
+    Args:
+        path: Path to the video file.
+        settings: Optional settings override.
+
+    Returns:
+        Tuple of ``(width, height)``.
+
+    Raises:
+        VideoCutError: If ffprobe fails or returns invalid data.
+    """
+    resolved = settings or get_settings()
+    if shutil.which(resolved.ffprobe_path) is None:
+        raise VideoCutError(f"ffprobe not found at '{resolved.ffprobe_path}'")
+
+    cmd = [
+        resolved.ffprobe_path,
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=width,height",
+        "-of",
+        "csv=p=0:s=x",
+        str(path),
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=30,
+        )
+    except subprocess.CalledProcessError as exc:
+        logger.error("ffprobe failed for {}: {}", path, exc.stderr)
+        raise VideoCutError(f"Failed to probe video dimensions: {path}") from exc
+    except subprocess.TimeoutExpired as exc:
+        raise VideoCutError(f"ffprobe timed out for: {path}") from exc
+
+    raw = result.stdout.strip()
+    if "x" not in raw:
+        raise VideoCutError(f"Invalid dimensions from ffprobe for: {path}")
+
+    width_str, height_str = raw.split("x", maxsplit=1)
+    try:
+        return int(width_str), int(height_str)
+    except ValueError as exc:
+        raise VideoCutError(f"Invalid dimensions from ffprobe for: {path}") from exc
+
+
 def run_ffmpeg(
     args: list[str],
     *,
