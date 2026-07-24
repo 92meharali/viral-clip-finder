@@ -12,7 +12,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 | 4 | Video cutting (FFmpeg) | Done |
 | 5 | Vertical cropping | Done |
 | 6 | Subtitle generation | Done |
-| 7 | Metadata generation | Planned |
+| 7 | Metadata generation | Done |
 | 8 | Quality checks | Planned |
 | 9 | Batch export mode | Planned |
 
@@ -211,6 +211,25 @@ burn_subtitles(vertical[0].output_path, subtitles[0].srt_path, style=style)
 ```
 
 See [docs/subtitle_generation.md](docs/subtitle_generation.md) for full module documentation.
+
+## Phase 7: Metadata Generation
+
+Generate platform-ready titles, hooks, descriptions, hashtags, CTAs, and SEO keywords for each clip using OpenAI.
+
+### Usage
+
+```python
+from app.llm.metadata_generator import generate_metadata
+
+metadata = generate_metadata(ranked, segments, output_dir="output")
+
+for item in metadata:
+    print(item.title)
+    print(item.title_variations)  # multiple title options
+    print(item.json_path)         # output/clip1_metadata.json
+```
+
+See [docs/metadata_generation.md](docs/metadata_generation.md) for full module documentation.
 
 ## Project Structure
 

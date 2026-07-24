@@ -30,3 +30,25 @@ def format_transcript_for_llm(segments: list[TranscriptSegment]) -> str:
         else:
             lines.append(f"{prefix} {segment.text}")
     return "\n".join(lines)
+
+
+def format_clip_transcript(
+    segments: list[TranscriptSegment],
+    *,
+    clip_start_seconds: float,
+    clip_end_seconds: float,
+) -> str:
+    """Format only the transcript segments within a clip window.
+
+    Args:
+        segments: Full transcript segments.
+        clip_start_seconds: Clip start in seconds.
+        clip_end_seconds: Clip end in seconds.
+
+    Returns:
+        Formatted transcript text for the clip window.
+    """
+    matching = [
+        segment for segment in segments if clip_start_seconds <= segment.seconds < clip_end_seconds
+    ]
+    return format_transcript_for_llm(matching)

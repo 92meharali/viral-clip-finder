@@ -8,8 +8,10 @@ import pytest
 
 from app.core.config import Settings
 from app.core.exceptions import LLMAnalysisError
-from app.llm.analyzer import ClipAnalyzer, _parse_llm_json, analyze_transcript
+from app.llm.analyzer import ClipAnalyzer, analyze_transcript
 from app.llm.client import create_openai_client
+from app.llm.json_utils import parse_llm_json
+from app.models.clip import ClipAnalysisResponse
 from app.models.transcript import TranscriptSegment
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -62,17 +64,17 @@ def _make_mock_client(response_content: str) -> MagicMock:
 
 class TestParseLlmJson:
     def test_parses_valid_json(self, llm_response_json: str) -> None:
-        result = _parse_llm_json(llm_response_json)
+        result = parse_llm_json(llm_response_json, ClipAnalysisResponse)
         assert len(result.clips) == 2
 
     def test_strips_markdown_fences(self, llm_response_json: str) -> None:
         fenced = f"```json\n{llm_response_json}\n```"
-        result = _parse_llm_json(fenced)
+        result = parse_llm_json(fenced, ClipAnalysisResponse)
         assert len(result.clips) == 2
 
     def test_invalid_json_raises(self) -> None:
         with pytest.raises(LLMAnalysisError, match="invalid JSON"):
-            _parse_llm_json("not json")
+            parse_llm_json("not json", ClipAnalysisResponse)
 
 
 class TestClipAnalyzer:

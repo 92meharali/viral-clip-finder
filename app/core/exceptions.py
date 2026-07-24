@@ -47,3 +47,11 @@ class VerticalCropError(ViralReelError):
 
 class SubtitleError(ViralReelError):
     """Raised when subtitle generation or burning fails."""
+
+
+class MetadataGenerationError(ViralReelError):
+    """Raised when LLM metadata generation fails."""
+
+    def __init__(self, message: str, *, model: str | None = None) -> None:
+        self.model = model
+        super().__init__(message)

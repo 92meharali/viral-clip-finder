@@ -1,6 +1,7 @@
 """Business logic services."""
 
 from app.llm.analyzer import ClipAnalyzer, analyze_transcript
+from app.llm.metadata_generator import MetadataGenerator, generate_metadata
 from app.services.clip_ranker import ClipRanker, rank_clips
 from app.services.transcript_parser import (
     TranscriptFormat,
@@ -15,6 +16,7 @@ from app.video.subtitles import SubtitleGenerator, generate_subtitles
 __all__ = [
     "ClipAnalyzer",
     "ClipRanker",
+    "MetadataGenerator",
     "SubtitleGenerator",
     "TranscriptFormat",
     "VerticalCropper",
@@ -23,6 +25,7 @@ __all__ = [
     "crop_to_vertical",
     "cut_clips",
     "detect_format",
+    "generate_metadata",
     "generate_subtitles",
     "parse_transcript",
     "parse_transcript_file",

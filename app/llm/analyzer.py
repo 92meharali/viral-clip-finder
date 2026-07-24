@@ -3,52 +3,23 @@
 from __future__ import annotations
 
 import json
-import re
 
 from loguru import logger
 from openai import OpenAI
-from pydantic import ValidationError
 
 from app.core.config import Settings, get_settings
 from app.core.exceptions import LLMAnalysisError
 from app.llm.client import create_openai_client
+from app.llm.json_utils import parse_llm_json
 from app.llm.transcript_formatter import format_transcript_for_llm
 from app.models.clip import ClipAnalysisResponse, ViralClip, ViralClipBase
 from app.models.transcript import TranscriptSegment
 from app.utils.prompt_loader import load_prompt
 
-_JSON_FENCE_PATTERN = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
-
-
-def _strip_json_fences(text: str) -> str:
-    """Remove markdown code fences from an LLM response if present."""
-    cleaned = text.strip()
-    if cleaned.startswith("```"):
-        cleaned = _JSON_FENCE_PATTERN.sub("", cleaned).strip()
-    return cleaned
-
 
 def _parse_llm_json(content: str) -> ClipAnalysisResponse:
-    """Parse and validate raw LLM JSON output.
-
-    Args:
-        content: Raw response text from the LLM.
-
-    Returns:
-        Validated :class:`ClipAnalysisResponse`.
-
-    Raises:
-        LLMAnalysisError: If JSON is invalid or fails schema validation.
-    """
-    try:
-        payload = json.loads(_strip_json_fences(content))
-        return ClipAnalysisResponse.model_validate(payload)
-    except json.JSONDecodeError as exc:
-        logger.error("LLM returned invalid JSON: {}", content[:200])
-        raise LLMAnalysisError("LLM returned invalid JSON") from exc
-    except ValidationError as exc:
-        logger.error("LLM JSON failed validation: {}", exc)
-        raise LLMAnalysisError(f"LLM response failed validation: {exc}") from exc
+    """Parse and validate raw LLM JSON output."""
+    return parse_llm_json(content, ClipAnalysisResponse)
 
 
 def _build_system_prompt(settings: Settings, transcript_text: str) -> str:
