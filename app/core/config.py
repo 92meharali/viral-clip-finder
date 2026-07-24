@@ -32,6 +32,10 @@ class Settings(BaseSettings):
 
     log_level: str = Field(default="INFO", description="Logging level")
 
+    output_dir: str = Field(default="output", description="Default directory for extracted clips")
+    ffmpeg_path: str = Field(default="ffmpeg", description="Path to the ffmpeg binary")
+    ffprobe_path: str = Field(default="ffprobe", description="Path to the ffprobe binary")
+
 
 @lru_cache
 def get_settings() -> Settings:

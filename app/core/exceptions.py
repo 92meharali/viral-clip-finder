@@ -27,3 +27,11 @@ class LLMAnalysisError(ViralReelError):
 
 class ClipRankingError(ViralReelError):
     """Raised when clip ranking fails."""
+
+
+class VideoCutError(ViralReelError):
+    """Raised when video cutting fails."""
+
+    def __init__(self, message: str, *, source_path: str | None = None) -> None:
+        self.source_path = source_path
+        super().__init__(message)

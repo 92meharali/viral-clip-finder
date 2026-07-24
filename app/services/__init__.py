@@ -8,12 +8,15 @@ from app.services.transcript_parser import (
     parse_transcript,
     parse_transcript_file,
 )
+from app.video.cutter import VideoCutter, cut_clips
 
 __all__ = [
     "ClipAnalyzer",
     "ClipRanker",
     "TranscriptFormat",
+    "VideoCutter",
     "analyze_transcript",
+    "cut_clips",
     "detect_format",
     "parse_transcript",
     "parse_transcript_file",

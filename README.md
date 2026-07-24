@@ -9,7 +9,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 | 1 | Transcript processing | Done |
 | 2 | LLM viral moment analysis | Done |
 | 3 | Clip ranking | Done |
-| 4 | Video cutting (FFmpeg) | Planned |
+| 4 | Video cutting (FFmpeg) | Done |
 | 5 | Vertical cropping | Planned |
 | 6 | Subtitle generation | Planned |
 | 7 | Metadata generation | Planned |
@@ -143,6 +143,32 @@ for clip in ranked:
 ```
 
 See [docs/clip_ranking.md](docs/clip_ranking.md) for full module documentation.
+
+## Phase 4: Video Cutting
+
+Extract ranked clips from a source video using FFmpeg. Uses stream copy by default with automatic re-encode fallback.
+
+### Prerequisites
+
+```bash
+brew install ffmpeg   # macOS
+ffmpeg -version
+```
+
+### Usage
+
+```python
+from app.video.cutter import cut_clips
+
+extracted = cut_clips("game_night.mp4", ranked, output_dir="output")
+
+for clip in extracted:
+    print(clip.output_path)  # output/clip1.mp4, output/clip2.mp4, ...
+```
+
+Supports **MP4**, **MOV**, and **MKV** source formats.
+
+See [docs/video_cutting.md](docs/video_cutting.md) for full module documentation.
 
 ## Project Structure
 
