@@ -55,3 +55,7 @@ class MetadataGenerationError(ViralReelError):
     def __init__(self, message: str, *, model: str | None = None) -> None:
         self.model = model
         super().__init__(message)
+
+
+class QualityCheckError(ViralReelError):
+    """Raised when quality checking cannot be performed."""

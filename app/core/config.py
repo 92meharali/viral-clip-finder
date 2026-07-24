@@ -50,6 +50,16 @@ class Settings(BaseSettings):
         default="bottom", description="Subtitle position: top, center, or bottom"
     )
 
+    min_viral_score: float = Field(
+        default=5.0, ge=0, le=10, description="Minimum viral score to pass quality checks"
+    )
+    max_silence_ratio: float = Field(
+        default=0.6,
+        ge=0,
+        le=1,
+        description="Maximum allowed silence ratio in a clip",
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:

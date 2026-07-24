@@ -13,7 +13,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 | 5 | Vertical cropping | Done |
 | 6 | Subtitle generation | Done |
 | 7 | Metadata generation | Done |
-| 8 | Quality checks | Planned |
+| 8 | Quality checks | Done |
 | 9 | Batch export mode | Planned |
 
 ## Tech Stack
@@ -230,6 +230,24 @@ for item in metadata:
 ```
 
 See [docs/metadata_generation.md](docs/metadata_generation.md) for full module documentation.
+
+## Phase 8: Quality Checks
+
+Filter out clips that are too short, too long, too silent, low-confidence, or contain repeated dialogue before export.
+
+### Usage
+
+```python
+from app.services.quality_checker import filter_quality_clips
+
+passed, report = filter_quality_clips(ranked, segments)
+
+print(f"{len(passed)}/{report.total} clips passed")
+for rejection in report.rejected:
+    print(rejection.index, [issue.code for issue in rejection.issues])
+```
+
+See [docs/quality_checks.md](docs/quality_checks.md) for full module documentation.
 
 ## Project Structure
 

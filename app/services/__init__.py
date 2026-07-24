@@ -3,6 +3,7 @@
 from app.llm.analyzer import ClipAnalyzer, analyze_transcript
 from app.llm.metadata_generator import MetadataGenerator, generate_metadata
 from app.services.clip_ranker import ClipRanker, rank_clips
+from app.services.quality_checker import ClipQualityChecker, filter_quality_clips
 from app.services.transcript_parser import (
     TranscriptFormat,
     detect_format,
@@ -15,6 +16,7 @@ from app.video.subtitles import SubtitleGenerator, generate_subtitles
 
 __all__ = [
     "ClipAnalyzer",
+    "ClipQualityChecker",
     "ClipRanker",
     "MetadataGenerator",
     "SubtitleGenerator",
@@ -25,6 +27,7 @@ __all__ = [
     "crop_to_vertical",
     "cut_clips",
     "detect_format",
+    "filter_quality_clips",
     "generate_metadata",
     "generate_subtitles",
     "parse_transcript",
