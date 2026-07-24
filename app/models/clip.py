@@ -57,3 +57,18 @@ class ClipAnalysisResponse(BaseModel):
     """Structured JSON response expected from the LLM."""
 
     clips: list[ViralClipBase] = Field(default_factory=list)
+
+
+class RankedClip(ViralClip):
+    """A viral clip enriched with ranking metadata."""
+
+    rank_score: float = Field(..., ge=0, description="Composite ranking score")
+    emotion_intensity: float = Field(
+        ..., ge=0, le=1, description="Normalized emotion intensity weight"
+    )
+    dialogue_density: float = Field(
+        ..., ge=0, description="Dialogue density (characters per second)"
+    )
+    length_score: float = Field(..., ge=0, le=1, description="Score based on ideal clip duration")
+
+    model_config = {"frozen": True}

@@ -8,7 +8,7 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 |-------|---------|--------|
 | 1 | Transcript processing | Done |
 | 2 | LLM viral moment analysis | Done |
-| 3 | Clip ranking | Planned |
+| 3 | Clip ranking | Done |
 | 4 | Video cutting (FFmpeg) | Planned |
 | 5 | Vertical cropping | Planned |
 | 6 | Subtitle generation | Planned |
@@ -122,6 +122,27 @@ MAX_CLIPS=10
 Prompts are stored in `app/prompts/` and loaded at runtime — never hardcoded.
 
 See [docs/llm_analysis.md](docs/llm_analysis.md) for full module documentation.
+
+## Phase 3: Clip Ranking
+
+The clip ranker scores, deduplicates, and selects the top N viral clips using emotion intensity, dialogue density, length fit, and variety.
+
+### Usage
+
+```python
+from app.services.transcript_parser import parse_transcript_file
+from app.llm.analyzer import analyze_transcript
+from app.services.clip_ranker import rank_clips
+
+segments = parse_transcript_file("transcript.txt")
+clips = analyze_transcript(segments)
+ranked = rank_clips(clips, segments, top_n=5)
+
+for clip in ranked:
+    print(f"[{clip.rank_score:.1f}] {clip.hook}")
+```
+
+See [docs/clip_ranking.md](docs/clip_ranking.md) for full module documentation.
 
 ## Project Structure
 

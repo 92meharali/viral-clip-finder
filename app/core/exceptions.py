@@ -23,3 +23,7 @@ class LLMAnalysisError(ViralReelError):
     def __init__(self, message: str, *, model: str | None = None) -> None:
         self.model = model
         super().__init__(message)
+
+
+class ClipRankingError(ViralReelError):
+    """Raised when clip ranking fails."""
