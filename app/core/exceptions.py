@@ -153,6 +153,38 @@ class UnknownProviderError(ViralReelError):
     """Raised when an unsupported AI provider is requested."""
 
 
+class YouTubeIngestionError(ViralReelError):
+    """Raised when YouTube metadata retrieval fails."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        url: str | None = None,
+        video_id: str | None = None,
+    ) -> None:
+        self.url = url
+        self.video_id = video_id
+        super().__init__(message)
+
+
+class YouTubeTranscriptUnavailableError(YouTubeIngestionError):
+    """Raised when a video has no usable subtitles."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        url: str | None = None,
+        video_id: str | None = None,
+        language: str | None = None,
+        subtitle_format: str | None = None,
+    ) -> None:
+        self.language = language
+        self.subtitle_format = subtitle_format
+        super().__init__(message, url=url, video_id=video_id)
+
+
 class ManualAnalysisRequiredError(LLMAnalysisError):
     """Raised when the Cursor manual provider needs a JSON response."""
 

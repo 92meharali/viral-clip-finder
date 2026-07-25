@@ -11,6 +11,7 @@ The project is transitioning from a CLI reel generator to a full web platform. S
 | Layer | Status |
 |-------|--------|
 | Transcript parsing, AI analysis, ranking | Done (CLI) |
+| YouTube URL ingestion (metadata + transcript) | Done |
 | REST API | Started — `GET /health` |
 | YouTube ingestion, dashboard, database | Planned |
 
@@ -22,6 +23,8 @@ uv run viral-clip-api
 ```
 
 See [docs/api.md](docs/api.md).
+
+YouTube ingestion is documented in [docs/youtube_ingestion.md](docs/youtube_ingestion.md).
 
 ## Status (CLI pipeline)
 

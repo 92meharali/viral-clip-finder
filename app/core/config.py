@@ -49,6 +49,15 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, ge=1, le=65535, description="API server bind port")
     api_reload: bool = Field(default=False, description="Enable uvicorn auto-reload for development")
 
+    youtube_preferred_languages: str = Field(
+        default="en,en-US,en-GB",
+        description="Comma-separated subtitle language preference list",
+    )
+    youtube_subtitle_format_priority: str = Field(
+        default="vtt,srv3,json3,ttml",
+        description="Comma-separated subtitle format preference list",
+    )
+
     output_dir: str = Field(default="output", description="Default directory for extracted clips")
     ffmpeg_path: str = Field(default="ffmpeg", description="Path to the ffmpeg binary")
     ffprobe_path: str = Field(default="ffprobe", description="Path to the ffprobe binary")

@@ -39,7 +39,7 @@ The repository began as **viral-reel-generator**, a CLI-first pipeline with heav
 | Spec area | Priority |
 |-----------|----------|
 | FastAPI REST API | **P0** — in progress |
-| YouTube URL → metadata + transcript (`yt-dlp`) | P0 |
+| YouTube URL → metadata + transcript (`yt-dlp`) | **Done** |
 | Background job / async analysis | P0 |
 | SQLAlchemy + Alembic (SQLite dev / Postgres prod) | P1 |
 | Next.js dashboard | P1 |
@@ -122,7 +122,7 @@ docs/
 | # | Feature | Conventional commit prefix |
 |---|---------|---------------------------|
 | 1 | FastAPI foundation + roadmap | `feat: add FastAPI foundation and roadmap` |
-| 2 | YouTube ingestion service | `feat: add YouTube metadata and transcript ingestion` |
+| 2 | YouTube ingestion service | `feat: add YouTube metadata and transcript ingestion` ✅ |
 | 3 | Analysis job model + `POST /analyze` stub | `feat: add analysis job API` |
 | 4 | Wire candidate windows to LLM pipeline | `feat: wire candidate windows to analysis` |
 | 5 | Database models (projects, clips) | `feat: add project persistence` |

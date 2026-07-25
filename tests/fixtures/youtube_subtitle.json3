@@ -1,0 +1,12 @@
+{
+  "events": [
+    {
+      "tStartMs": 1000,
+      "segs": [{ "utf8": "Welcome to the show." }]
+    },
+    {
+      "tStartMs": 3500,
+      "segs": [{ "utf8": "Today we discuss viral moments." }]
+    }
+  ]
+}
