@@ -1,8 +1,29 @@
-# Viral Reel Generator
+# AI Viral Clip Finder
 
-Convert long YouTube videos into viral short-form clips with AI-powered moment detection, automatic cutting, vertical cropping, captions, and export-ready metadata.
+An **AI Video Intelligence Platform** that helps creators find the best viral moments from long-form YouTube videos. Paste a URL, analyze the transcript, browse ranked clips with explanations, and optionally extract MP4s for editing in CapCut, Premiere, or DaVinci Resolve.
 
-## Status
+> This project is **not** a video editor. It finds moments and explains why they matter.
+
+## Roadmap
+
+The project is transitioning from a CLI reel generator to a full web platform. See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete plan.
+
+| Layer | Status |
+|-------|--------|
+| Transcript parsing, AI analysis, ranking | Done (CLI) |
+| REST API | Started — `GET /health` |
+| YouTube ingestion, dashboard, database | Planned |
+
+### API server
+
+```bash
+uv run viral-clip-api
+# Open http://localhost:8000/docs for OpenAPI
+```
+
+See [docs/api.md](docs/api.md).
+
+## Status (CLI pipeline)
 
 | Phase | Feature | Status |
 |-------|---------|--------|
@@ -15,12 +36,57 @@ Convert long YouTube videos into viral short-form clips with AI-powered moment d
 | 7 | Metadata generation | Done |
 | 8 | Quality checks | Done |
 | 9 | Batch export mode | Done |
+| 10 | AI provider abstraction | Done |
+| X.1 | Face detection (reframe) | Done |
+| X.2 | Face tracking (reframe) | Done |
+| X.3 | Scene detection (reframe) | Done |
+| X.4 | Active speaker estimation (reframe) | Done |
+| X.5 | Importance scoring (reframe) | Done |
+| X.6 | Shot composition (reframe) | Done |
+| X.7 | Virtual camera planner (reframe) | Done |
+| X.8 | Temporal smoothing (reframe) | Done |
+| X.9 | Safe crop generator (reframe) | Done |
+| X.10 | FFmpeg renderer (reframe) | Done |
+| Integration | Batch export + metrics + candidate windows | Done |
+
+## Architecture
+
+The pipeline is modular. Each stage is an independent module:
+
+```
+Video → Transcript → Parser → AI Analyzer → Ranking → FFmpeg → Vertical → Subtitles → Metadata → Export
+```
+
+The AI layer is fully decoupled via the `ClipAnalyzer` interface (`app/providers/`). The rest of the app never knows which model is used.
+
+| Provider | Description |
+|----------|-------------|
+| `cursor` | Manual workflow — export prompt, paste into Cursor, import JSON (no API key) |
+| `openai` | Automated via OpenAI API |
+
+See [docs/ai_providers.md](docs/ai_providers.md) for the full provider guide.
+
+### Cursor workflow (default)
+
+```bash
+# 1. Export prompt
+uv run viral-reel ai export-prompt -t transcript.txt -o analysis_prompt.md
+
+# 2. Paste into Cursor, save JSON response
+
+# 3. Validate
+uv run viral-reel ai validate-response -r analysis_response.json
+
+# 4. Export clips
+uv run viral-reel export -v video.mp4 -t transcript.txt --analysis-response analysis_response.json
+```
 
 ## Tech Stack
 
 - **Python 3.12** with [uv](https://github.com/astral-sh/uv) for dependency management
 - **FastAPI** + **Pydantic** for the API layer (coming soon)
-- **OpenAI SDK** for viral moment detection (Phase 2)
+- **Pluggable AI providers** (`cursor` manual, `openai`; more coming)
+- **OpenAI SDK** optional — only required when `AI_PROVIDER=openai`
 - **FFmpeg** for video processing (Phase 4+)
 - **Typer** for CLI
 - **pytest** for testing, **ruff** / **black** / **mypy** for code quality
