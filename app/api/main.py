@@ -7,13 +7,14 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from app.api.routes import analyze, clips, health, projects
 from app.core.config import Settings, get_settings
 from app.database.session import Database
 from app.services.analysis.sqlalchemy_store import SqlAlchemyAnalysisJobStore
-from app.services.analysis.store import AnalysisJobStore, InMemoryAnalysisJobStore
+from app.services.analysis.store import AnalysisJobStore
 
 API_TITLE = "Viral Clip Finder API"
 API_DESCRIPTION = (
@@ -75,6 +76,18 @@ def create_app(
         description=API_DESCRIPTION,
         version=API_VERSION,
         lifespan=lifespan,
+    )
+    cors_origins = [
+        origin.strip()
+        for origin in resolved_settings.cors_origins.split(",")
+        if origin.strip()
+    ]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     app.state.job_store = store
     if database is not None:

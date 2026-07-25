@@ -20,3 +20,5 @@ data/
 episodes/**/output/
 episodes/**/export/
 episodes/**/ffmpeg
+frontend/node_modules/
+frontend/.next/

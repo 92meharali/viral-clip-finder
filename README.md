@@ -15,8 +15,7 @@ The project is transitioning from a CLI reel generator to a full web platform. S
 | REST API | Started — health + analyze jobs |
 | Database persistence | Done — SQLite dev / PostgreSQL prod |
 | Project & clip API | Done — `GET /projects`, `GET /clips` |
-| Next.js dashboard (website UI) | **Not started** — Phase 3 |
-| YouTube ingestion, dashboard, database | Planned |
+| Next.js dashboard (website UI) | Started — home, jobs, projects pages |
 
 ### API server
 
@@ -28,6 +27,17 @@ uv run viral-clip-api
 See [docs/api.md](docs/api.md) and [docs/analysis_jobs.md](docs/analysis_jobs.md).
 
 YouTube ingestion is documented in [docs/youtube_ingestion.md](docs/youtube_ingestion.md).
+
+See [docs/frontend.md](docs/frontend.md).
+
+### Frontend (website)
+
+```bash
+cd frontend && cp .env.example .env.local && npm install && npm run dev
+# Open http://localhost:3000
+```
+
+Run the API (`uv run viral-clip-api`) in a separate terminal.
 
 ## Status (CLI pipeline)
 

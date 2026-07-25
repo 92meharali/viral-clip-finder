@@ -68,6 +68,11 @@ class Settings(BaseSettings):
         description="Create database tables automatically on API startup",
     )
 
+    cors_origins: str = Field(
+        default="http://localhost:3000,http://127.0.0.1:3000",
+        description="Comma-separated allowed CORS origins for the web frontend",
+    )
+
     output_dir: str = Field(default="output", description="Default directory for extracted clips")
     ffmpeg_path: str = Field(default="ffmpeg", description="Path to the ffmpeg binary")
     ffprobe_path: str = Field(default="ffprobe", description="Path to the ffprobe binary")

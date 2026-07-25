@@ -128,7 +128,7 @@ docs/
 | 5 | Database models (projects, clips) | `feat: add project persistence` ✅ |
 | 6 | `GET /projects` and `GET /clips` | `feat: add project and clip list endpoints` ✅ |
 | 7 | Optional clip extraction API | `feat: add clip extraction endpoint` |
-| 8 | Next.js frontend scaffold | `feat: add Next.js frontend scaffold` |
+| 8 | Next.js frontend scaffold | `feat: add Next.js frontend scaffold` ✅ |
 
 Each feature: implementation → tests → docs → single commit → wait for **continue**.
 
