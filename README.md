@@ -12,7 +12,7 @@ The project is transitioning from a CLI reel generator to a full web platform. S
 |-------|--------|
 | Transcript parsing, AI analysis, ranking | Done (CLI) |
 | YouTube URL ingestion (metadata + transcript) | Done |
-| REST API | Started — `GET /health` |
+| REST API | Started — health + analyze jobs |
 | YouTube ingestion, dashboard, database | Planned |
 
 ### API server
@@ -22,7 +22,7 @@ uv run viral-clip-api
 # Open http://localhost:8000/docs for OpenAPI
 ```
 
-See [docs/api.md](docs/api.md).
+See [docs/api.md](docs/api.md) and [docs/analysis_jobs.md](docs/analysis_jobs.md).
 
 YouTube ingestion is documented in [docs/youtube_ingestion.md](docs/youtube_ingestion.md).
 

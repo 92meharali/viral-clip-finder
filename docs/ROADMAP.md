@@ -123,7 +123,7 @@ docs/
 |---|---------|---------------------------|
 | 1 | FastAPI foundation + roadmap | `feat: add FastAPI foundation and roadmap` |
 | 2 | YouTube ingestion service | `feat: add YouTube metadata and transcript ingestion` ✅ |
-| 3 | Analysis job model + `POST /analyze` stub | `feat: add analysis job API` |
+| 3 | Analysis job model + `POST /analyze` stub | `feat: add analysis job API` ✅ |
 | 4 | Wire candidate windows to LLM pipeline | `feat: wire candidate windows to analysis` |
 | 5 | Database models (projects, clips) | `feat: add project persistence` |
 | 6 | `GET /projects` and `GET /clips` | `feat: add project and clip list endpoints` |

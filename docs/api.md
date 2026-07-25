@@ -20,6 +20,7 @@ uv run uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
 | `API_PORT` | `8000` | Bind port |
 | `API_RELOAD` | `false` | Enable uvicorn auto-reload |
 | `LOG_LEVEL` | `INFO` | Logging level |
+| `AI_PROVIDER` | `cursor` | Default provider for `/analyze` jobs |
 
 ## Endpoints
 
@@ -37,11 +38,22 @@ Liveness probe for orchestrators and load balancers.
 }
 ```
 
+### `POST /analyze`
+
+Queue a background job to ingest and analyze a YouTube video.
+
+**Response** `202 Accepted` — see [analysis_jobs.md](analysis_jobs.md).
+
+### `GET /analyze/{job_id}`
+
+Poll analysis job status and retrieve ranked clips when complete.
+
+See [analysis_jobs.md](analysis_jobs.md) for full request/response details and examples.
+
 ## Planned endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/analyze` | Start analysis for a YouTube URL |
 | `GET` | `/projects` | List analysis projects |
 | `GET` | `/projects/{id}` | Project detail and status |
 | `GET` | `/clips` | List clips for a project |
