@@ -1,6 +1,6 @@
 """Viral clip data models."""
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.utils.time_utils import format_timestamp, parse_timestamp
 
@@ -8,13 +8,21 @@ from app.utils.time_utils import format_timestamp, parse_timestamp
 class ViralClipBase(BaseModel):
     """Raw viral clip fields returned by the LLM."""
 
+    model_config = ConfigDict(populate_by_name=True)
+
     start: str = Field(..., description="Clip start timestamp (HH:MM:SS or MM:SS)")
     end: str = Field(..., description="Clip end timestamp (HH:MM:SS or MM:SS)")
     reason: str = Field(..., min_length=1, description="Why this moment is viral")
-    viral_score: float = Field(..., ge=0, le=10, description="Viral potential score 0-10")
+    viral_score: float = Field(
+        ...,
+        ge=0,
+        le=10,
+        alias="score",
+        description="Viral potential score 0-10",
+    )
     emotion: str = Field(..., min_length=1, description="Primary emotion detected")
     hook: str = Field(..., min_length=1, description="Short hook for social media")
-    summary: str = Field(..., min_length=1, description="Brief summary of the clip")
+    summary: str = Field(default="", description="Brief summary of the clip")
 
     @field_validator("start", "end")
     @classmethod
@@ -22,6 +30,13 @@ class ViralClipBase(BaseModel):
         """Ensure timestamps are parseable and normalize to HH:MM:SS."""
         seconds = parse_timestamp(value)
         return format_timestamp(seconds)
+
+    @model_validator(mode="after")
+    def default_summary_from_reason(self) -> "ViralClipBase":
+        """Use reason as summary when the model omits summary."""
+        if not self.summary.strip():
+            self.summary = self.reason
+        return self
 
 
 class ViralClip(ViralClipBase):

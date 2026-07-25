@@ -8,7 +8,7 @@ import pytest
 
 from app.core.config import Settings
 from app.core.exceptions import LLMAnalysisError
-from app.llm.analyzer import ClipAnalyzer, analyze_transcript
+from app.llm.analyzer import OpenAIClipAnalyzer, analyze_transcript
 from app.llm.client import create_openai_client
 from app.llm.json_utils import parse_llm_json
 from app.models.clip import ClipAnalysisResponse
@@ -84,11 +84,11 @@ class TestClipAnalyzer:
         sample_segments: list[TranscriptSegment],
         llm_response_json: str,
     ) -> None:
-        analyzer = ClipAnalyzer(
+        analyzer = OpenAIClipAnalyzer(
             settings=settings,
             client=_make_mock_client(llm_response_json),
         )
-        clips = analyzer.analyze(sample_segments)
+        clips = analyzer.analyze_transcript(sample_segments)
 
         assert len(clips) == 2
         assert clips[0].viral_score >= clips[1].viral_score
@@ -96,21 +96,21 @@ class TestClipAnalyzer:
         assert clips[0].duration_seconds == 32.0
 
     def test_empty_transcript_raises(self, settings: Settings) -> None:
-        analyzer = ClipAnalyzer(settings=settings, client=MagicMock())
+        analyzer = OpenAIClipAnalyzer(settings=settings, client=MagicMock())
         with pytest.raises(LLMAnalysisError, match="empty transcript"):
-            analyzer.analyze([])
+            analyzer.analyze_transcript([])
 
     def test_empty_llm_response_raises(
         self,
         settings: Settings,
         sample_segments: list[TranscriptSegment],
     ) -> None:
-        analyzer = ClipAnalyzer(
+        analyzer = OpenAIClipAnalyzer(
             settings=settings,
             client=_make_mock_client(""),
         )
         with pytest.raises(LLMAnalysisError, match="empty response"):
-            analyzer.analyze(sample_segments)
+            analyzer.analyze_transcript(sample_segments)
 
     def test_api_failure_raises(
         self,
@@ -119,10 +119,10 @@ class TestClipAnalyzer:
     ) -> None:
         mock_client = MagicMock()
         mock_client.chat.completions.create.side_effect = RuntimeError("API down")
-        analyzer = ClipAnalyzer(settings=settings, client=mock_client)
+        analyzer = OpenAIClipAnalyzer(settings=settings, client=mock_client)
 
         with pytest.raises(LLMAnalysisError, match="API call failed"):
-            analyzer.analyze(sample_segments)
+            analyzer.analyze_transcript(sample_segments)
 
     def test_skips_invalid_clips(
         self,
@@ -153,8 +153,8 @@ class TestClipAnalyzer:
                 ]
             }
         )
-        analyzer = ClipAnalyzer(settings=settings, client=_make_mock_client(payload))
-        clips = analyzer.analyze(sample_segments)
+        analyzer = OpenAIClipAnalyzer(settings=settings, client=_make_mock_client(payload))
+        clips = analyzer.analyze_transcript(sample_segments)
 
         assert len(clips) == 1
         assert clips[0].viral_score == 9.0

@@ -10,13 +10,13 @@ import pytest
 
 from app.core.config import Settings
 from app.core.exceptions import BatchExportError
+from app.models.batch import BatchExportManifest
 from app.models.clip import RankedClip, ViralClip
 from app.models.export import ExtractedClip, VerticalClip
 from app.models.metadata import ClipMetadata
 from app.models.subtitle import SubtitleFile
 from app.models.transcript import TranscriptSegment
 from app.services.batch_exporter import BatchExportOptions, BatchExporter, save_manifest
-from app.models.batch import BatchExportManifest
 
 
 @pytest.fixture
@@ -79,9 +79,32 @@ def _make_ranked_clip(**kwargs: object) -> RankedClip:
     )
 
 
-@pytest.fixture
-def mock_llm_client() -> MagicMock:
-    return MagicMock()
+def _make_mock_analyzer(
+    *,
+    clips: list[RankedClip] | None = None,
+    metadata: list[ClipMetadata] | None = None,
+) -> MagicMock:
+    ranked = clips or [_make_ranked_clip()]
+    analyzer = MagicMock()
+    analyzer.provider_name = "openai"
+    analyzer.analyze_transcript.return_value = ranked
+    analyzer.rank_candidates.return_value = ranked
+    analyzer.generate_metadata_batch.return_value = metadata or [
+        ClipMetadata(
+            index=1,
+            clip_start="00:00:10",
+            clip_end="00:00:50",
+            title="Title One",
+            title_variations=["Alt 1", "Alt 2"],
+            hook="Hook one",
+            description="Description",
+            hashtags=["#a", "#b", "#c"],
+            call_to_action="Follow",
+            seo_keywords=["k1", "k2", "k3"],
+            json_path="clip1_metadata.json",
+        )
+    ]
+    return analyzer
 
 
 class TestSaveManifest:
@@ -102,44 +125,24 @@ class TestSaveManifest:
 
 
 class TestBatchExporter:
-    @patch("app.services.batch_exporter.generate_metadata")
     @patch("app.services.batch_exporter.filter_quality_clips")
-    @patch("app.services.batch_exporter.rank_clips")
-    @patch("app.services.batch_exporter.analyze_transcript")
+    @patch("app.services.batch_exporter.generate_candidate_windows")
     def test_full_export_pipeline(
         self,
-        mock_analyze: MagicMock,
-        mock_rank: MagicMock,
+        mock_candidates: MagicMock,
         mock_quality: MagicMock,
-        mock_metadata: MagicMock,
         settings: Settings,
         segments: list[TranscriptSegment],
         video_file: Path,
         transcript_file: Path,
         tmp_path: Path,
-        mock_llm_client: MagicMock,
     ) -> None:
         clips = [_make_ranked_clip(), _make_ranked_clip(start_seconds=60.0, end_seconds=100.0)]
-        mock_analyze.return_value = clips
-        mock_rank.return_value = clips
         mock_quality.return_value = ([clips[0]], MagicMock(rejected=[], total=2))
-        mock_metadata.return_value = [
-            ClipMetadata(
-                index=1,
-                clip_start="00:00:10",
-                clip_end="00:00:50",
-                title="Title One",
-                title_variations=["Alt 1", "Alt 2"],
-                hook="Hook one",
-                description="Description",
-                hashtags=["#a", "#b", "#c"],
-                call_to_action="Follow",
-                seo_keywords=["k1", "k2", "k3"],
-                json_path=str(tmp_path / "clip1_metadata.json"),
-            )
-        ]
+        mock_candidates.return_value = MagicMock(windows=[], signal_count=0)
+        analyzer = _make_mock_analyzer(clips=clips)
 
-        exporter = BatchExporter(settings=settings, client=mock_llm_client)
+        exporter = BatchExporter(settings=settings, analyzer=analyzer)
         result = exporter.export(
             video_file,
             transcript_file,
@@ -154,11 +157,12 @@ class TestBatchExporter:
         assert result.manifest.clips[0].title == "Title One"
         assert result.manifest.manifest_path is not None
         assert Path(result.manifest.manifest_path).exists()
+        analyzer.analyze_transcript.assert_called_once()
+        analyzer.rank_candidates.assert_called_once()
+        analyzer.generate_metadata_batch.assert_called_once()
 
-    @patch("app.services.batch_exporter.analyze_transcript")
     def test_raises_when_no_clips_pass_quality(
         self,
-        mock_analyze: MagicMock,
         settings: Settings,
         segments: list[TranscriptSegment],
         video_file: Path,
@@ -166,17 +170,22 @@ class TestBatchExporter:
         tmp_path: Path,
     ) -> None:
         clips = [_make_viral_clip(viral_score=2.0)]
-        mock_analyze.return_value = clips
+        analyzer = _make_mock_analyzer(clips=[_make_ranked_clip(viral_score=2.0)])
+        analyzer.analyze_transcript.return_value = clips
+        analyzer.rank_candidates.return_value = clips
 
         with (
-            patch("app.services.batch_exporter.rank_clips", return_value=clips),
+            patch(
+                "app.services.batch_exporter.generate_candidate_windows",
+                return_value=MagicMock(windows=[], signal_count=0),
+            ),
             patch(
                 "app.services.batch_exporter.filter_quality_clips",
                 return_value=([], MagicMock(rejected=[MagicMock()], total=1)),
             ),
             pytest.raises(BatchExportError, match="No clips passed quality"),
         ):
-            BatchExporter(settings=settings).export(
+            BatchExporter(settings=settings, analyzer=analyzer).export(
                 video_file,
                 transcript_file,
                 output_dir=tmp_path,
@@ -199,16 +208,12 @@ class TestBatchExporter:
     @patch("app.services.batch_exporter.generate_subtitles")
     @patch("app.services.batch_exporter.crop_to_vertical")
     @patch("app.services.batch_exporter.cut_clips")
-    @patch("app.services.batch_exporter.generate_metadata")
     @patch("app.services.batch_exporter.filter_quality_clips")
-    @patch("app.services.batch_exporter.rank_clips")
-    @patch("app.services.batch_exporter.analyze_transcript")
+    @patch("app.services.batch_exporter.generate_candidate_windows")
     def test_processes_videos_when_not_skipped(
         self,
-        mock_analyze: MagicMock,
-        mock_rank: MagicMock,
+        mock_candidates: MagicMock,
         mock_quality: MagicMock,
-        mock_metadata: MagicMock,
         mock_cut: MagicMock,
         mock_crop: MagicMock,
         mock_subtitles: MagicMock,
@@ -219,8 +224,7 @@ class TestBatchExporter:
         tmp_path: Path,
     ) -> None:
         clip = _make_ranked_clip()
-        mock_analyze.return_value = [clip]
-        mock_rank.return_value = [clip]
+        mock_candidates.return_value = MagicMock(windows=[], signal_count=0)
         mock_quality.return_value = ([clip], MagicMock(rejected=[], total=1))
         mock_cut.return_value = [
             ExtractedClip(
@@ -254,25 +258,29 @@ class TestBatchExporter:
                 cue_count=2,
             )
         ]
-        mock_metadata.return_value = [
-            ClipMetadata(
-                index=1,
-                clip_start="00:00:10",
-                clip_end="00:00:50",
-                title="Title",
-                title_variations=["A", "B"],
-                hook="Hook",
-                description="Desc",
-                hashtags=["#a", "#b", "#c"],
-                call_to_action="CTA",
-                seo_keywords=["k1", "k2", "k3"],
-            )
-        ]
+        analyzer = _make_mock_analyzer(
+            clips=[clip],
+            metadata=[
+                ClipMetadata(
+                    index=1,
+                    clip_start="00:00:10",
+                    clip_end="00:00:50",
+                    title="Title",
+                    title_variations=["A", "B"],
+                    hook="Hook",
+                    description="Desc",
+                    hashtags=["#a", "#b", "#c"],
+                    call_to_action="CTA",
+                    seo_keywords=["k1", "k2", "k3"],
+                )
+            ],
+        )
 
-        result = BatchExporter(settings=settings, client=MagicMock()).export(
+        result = BatchExporter(settings=settings, analyzer=analyzer).export(
             video_file,
             transcript_file,
             output_dir=tmp_path,
+            options=BatchExportOptions(vertical_crop_mode="center"),
             segments=segments,
         )
 
@@ -282,3 +290,90 @@ class TestBatchExporter:
         mock_cut.assert_called_once()
         mock_crop.assert_called_once()
         mock_subtitles.assert_called_once()
+
+    @patch("app.services.batch_exporter.generate_subtitles")
+    @patch("app.services.batch_exporter.crop_to_vertical")
+    @patch("app.services.batch_exporter.cut_clips")
+    @patch("app.services.batch_exporter.filter_quality_clips")
+    @patch("app.services.batch_exporter.generate_candidate_windows")
+    def test_structured_output_layout(
+        self,
+        mock_candidates: MagicMock,
+        mock_quality: MagicMock,
+        mock_cut: MagicMock,
+        mock_crop: MagicMock,
+        mock_subtitles: MagicMock,
+        settings: Settings,
+        segments: list[TranscriptSegment],
+        video_file: Path,
+        transcript_file: Path,
+        tmp_path: Path,
+    ) -> None:
+        clip = _make_ranked_clip()
+        mock_candidates.return_value = MagicMock(windows=[], signal_count=0)
+        mock_quality.return_value = ([clip], MagicMock(rejected=[], total=1))
+        mock_cut.return_value = [
+            ExtractedClip(
+                index=1,
+                source_path=str(video_file),
+                output_path=str(tmp_path / "episode" / "clips" / "clip1.mp4"),
+                start="00:00:10",
+                end="00:00:50",
+                start_seconds=10.0,
+                end_seconds=50.0,
+                duration_seconds=40.0,
+            )
+        ]
+        mock_crop.return_value = [
+            VerticalClip(
+                index=1,
+                source_path=str(tmp_path / "episode" / "clips" / "clip1.mp4"),
+                output_path=str(tmp_path / "episode" / "reframe" / "clip1_vertical.mp4"),
+                width=1080,
+                height=1920,
+                blurred_background=False,
+                crop_mode="center_crop",
+            )
+        ]
+        mock_subtitles.return_value = [
+            SubtitleFile(
+                index=1,
+                clip_start="00:00:10",
+                clip_end="00:00:50",
+                srt_path=str(tmp_path / "episode" / "subtitles" / "clip1.srt"),
+                cue_count=2,
+            )
+        ]
+        analyzer = _make_mock_analyzer(clips=[clip])
+
+        result = BatchExporter(settings=settings, analyzer=analyzer).export(
+            video_file,
+            transcript_file,
+            output_dir=tmp_path,
+            options=BatchExportOptions(
+                structured_output=True,
+                episode_name="episode",
+                vertical_crop_mode="center",
+            ),
+            segments=segments,
+        )
+
+        episode_root = tmp_path / "episode"
+        assert result.manifest.output_dir == str(episode_root.resolve())
+        assert Path(result.manifest.manifest_path).parent == episode_root
+        assert (episode_root / "analysis.json").exists()
+        assert (episode_root / "report.md").exists()
+        assert (episode_root / "clips").is_dir()
+        assert (episode_root / "reframe").is_dir()
+        assert (episode_root / "metadata").is_dir()
+        assert (episode_root / "subtitles").is_dir()
+
+        cut_kwargs = mock_cut.call_args.kwargs
+        crop_kwargs = mock_crop.call_args.kwargs
+        subtitle_kwargs = mock_subtitles.call_args.kwargs
+        assert Path(cut_kwargs["output_dir"]) == episode_root / "clips"
+        assert Path(crop_kwargs["output_dir"]) == episode_root / "reframe"
+        assert Path(subtitle_kwargs["output_dir"]) == episode_root / "subtitles"
+        assert Path(analyzer.generate_metadata_batch.call_args.kwargs["output_dir"]) == (
+            episode_root / "metadata"
+        )

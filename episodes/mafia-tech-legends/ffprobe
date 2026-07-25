@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""Minimal ffprobe shim backed by ffmpeg for environments without ffprobe."""
+
+from __future__ import annotations
+
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+DURATION_PATTERN = re.compile(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)")
+VIDEO_PATTERN = re.compile(r"Video:.*?(\d{2,5})x(\d{2,5})")
+
+
+def _ffmpeg_path() -> str:
+    return str(Path(__file__).with_name("ffmpeg"))
+
+
+def _probe_text(path: str) -> str:
+    result = subprocess.run(
+        [_ffmpeg_path(), "-hide_banner", "-i", path],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stderr
+
+
+def _duration_seconds(path: str) -> float:
+    match = DURATION_PATTERN.search(_probe_text(path))
+    if not match:
+        raise SystemExit(f"Could not determine duration for {path}")
+    hours, minutes, seconds = match.groups()
+    return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+
+
+def _dimensions(path: str) -> tuple[int, int]:
+    match = VIDEO_PATTERN.search(_probe_text(path))
+    if not match:
+        raise SystemExit(f"Could not determine dimensions for {path}")
+    return int(match.group(1)), int(match.group(2))
+
+
+def main() -> None:
+    args = sys.argv[1:]
+    if not args:
+        raise SystemExit("usage: ffprobe [options] input")
+
+    path = args[-1]
+    joined = " ".join(args)
+
+    if "format=duration" in joined:
+        print(_duration_seconds(path))
+        return
+
+    if "stream=width,height" in joined:
+        width, height = _dimensions(path)
+        print(f"{width}x{height}")
+        return
+
+    raise SystemExit(f"Unsupported ffprobe invocation: {' '.join(args)}")
+
+
+if __name__ == "__main__":
+    main()

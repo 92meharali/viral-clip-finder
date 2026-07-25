@@ -11,7 +11,8 @@ import pytest
 from app.core.config import Settings
 from app.core.exceptions import MetadataGenerationError
 from app.llm.json_utils import parse_llm_json, strip_json_fences
-from app.llm.metadata_generator import MetadataGenerator, generate_metadata, save_metadata
+from app.llm.metadata_generator import MetadataGenerator, generate_metadata
+from app.providers.metadata_io import save_metadata
 from app.llm.transcript_formatter import format_clip_transcript
 from app.models.clip import ViralClip
 from app.models.metadata import ClipMetadata, ClipMetadataBase

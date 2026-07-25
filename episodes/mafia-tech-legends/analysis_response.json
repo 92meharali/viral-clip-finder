@@ -1,0 +1,94 @@
+{
+  "clips": [
+    {
+      "start": "00:14:20",
+      "end": "00:15:00",
+      "score": 9.9,
+      "emotion": "betrayal",
+      "hook": "He claimed to be the angel. He was lying the whole time.",
+      "reason": "Moxie Marlinspike drops the biggest bluff of the game — claims angel, clears Ryan, survives trial.",
+      "summary": "Signal founder Moxie reveals he saved Ryan as the angel during a heated trial against Palmer Luckey."
+    },
+    {
+      "start": "00:31:15",
+      "end": "00:31:57",
+      "score": 9.8,
+      "emotion": "shock",
+      "hook": "The mafia wins. And it's the guy everyone trusted.",
+      "reason": "Final vote ends the game — Moxie was mafia all along and gets thrown into piranhas as a victory lap.",
+      "summary": "The final vote kills Moxie, but the mafia still wins — the ultimate twist ending with tech legends stunned."
+    },
+    {
+      "start": "00:31:38",
+      "end": "00:32:10",
+      "score": 9.7,
+      "emotion": "reveal",
+      "hook": "Sam Altman just learned Moxie lied to his face for 30 minutes.",
+      "reason": "Post-game reactions — players realize they were masterfully deceived by a first-time mafia player.",
+      "summary": "After the reveal, Sam Altman and the table react in disbelief that Moxie fooled everyone despite claiming angel early."
+    },
+    {
+      "start": "00:10:00",
+      "end": "00:10:35",
+      "score": 9.4,
+      "emotion": "humor",
+      "hook": "They voted her out unanimously. Then the electric chair.",
+      "reason": "Josie Zayner gets unanimously voted out and narrated into an electric chair execution — dark comedy gold.",
+      "summary": "The town votes unanimously to kill Josie, who gets a dramatic electric chair death narration."
+    },
+    {
+      "start": "00:15:40",
+      "end": "00:16:20",
+      "score": 9.2,
+      "emotion": "humor",
+      "hook": "Palmer Luckey got stoned to death over a Shirley Jackson reference.",
+      "reason": "Palmer is killed by stoning in the tradition of The Lottery — generational culture clash over a classic short story.",
+      "summary": "Palmer Luckey is executed by stoning, sparking a hilarious debate about whether everyone read Shirley Jackson's The Lottery."
+    },
+    {
+      "start": "00:29:40",
+      "end": "00:30:40",
+      "score": 9.1,
+      "emotion": "suspense",
+      "hook": "Final trial. He still claims he's the angel.",
+      "reason": "Climactic Moxy vs Trey trial — Moxie delivers an elaborate angel defense while the table debates his survival.",
+      "summary": "With the game on the line, Moxie and Trey face trial as Moxie argues why surviving three rounds proves he's the angel."
+    },
+    {
+      "start": "00:17:00",
+      "end": "00:17:45",
+      "score": 8.9,
+      "emotion": "shock",
+      "hook": "They found his body in five shipping containers.",
+      "reason": "Ryan Petersen's murder announcement is brutally creative — pieces found across five shipping containers.",
+      "summary": "Flexport founder Ryan Petersen is killed off with one of the most absurd death narrations of the night."
+    },
+    {
+      "start": "00:00:37",
+      "end": "00:01:15",
+      "score": 8.7,
+      "emotion": "humor",
+      "hook": "Sam Altman walked in and said he's going unhinged tonight.",
+      "reason": "Celebrity-packed cold open — Sam Altman, pro poker players, and deal negotiators trash-talk before the game.",
+      "summary": "The intro sets the tone with tech legends boasting about lying, winning, and going unhinged for Mafia night."
+    },
+    {
+      "start": "00:02:48",
+      "end": "00:03:15",
+      "score": 8.5,
+      "emotion": "humor",
+      "hook": "The Second Amendment could have solved this mafia problem.",
+      "reason": "Rules explanation derails into a guns joke — instant meme potential with Founders Fund energy.",
+      "summary": "During the rules rundown, a player jokes that townspeople having guns would eliminate the mafia problem entirely."
+    },
+    {
+      "start": "00:26:55",
+      "end": "00:27:35",
+      "score": 8.4,
+      "emotion": "accusation",
+      "hook": "How is Moxie still alive and never on trial?",
+      "reason": "Late-game paranoia peaks as players question why Moxie keeps surviving despite claiming angel.",
+      "summary": "With Brian Johnson dead, the remaining players finally question why Moxie has never been nominated despite dominating the game."
+    }
+  ]
+}

@@ -14,6 +14,7 @@ class TestPromptLoader:
             max_clips="5",
             min_duration="20",
             max_duration="90",
+            json_schema='{"clips": []}',
         )
         assert "[00:00:13] Hello" in prompt
         assert "5" in prompt

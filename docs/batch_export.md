@@ -30,6 +30,8 @@ manifest.json + clip artifacts
 
 ## Output Folder
 
+### Flat (default)
+
 ```
 output/
 ├── manifest.json
@@ -40,6 +42,20 @@ output/
 ├── clip2.mp4
 ├── clip2_vertical.mp4
 ...
+```
+
+### Structured (`--structured`)
+
+```
+output/episode-name/
+├── manifest.json
+├── analysis.json
+├── report.md
+├── clips/              # horizontal clips
+├── reframe/            # vertical clips + reframe metrics
+├── metadata/
+├── subtitles/
+└── logs/
 ```
 
 ## CLI Usage
@@ -54,6 +70,18 @@ uv run viral-reel export \
 
 # With blurred background and burned subtitles
 uv run viral-reel export -v game.mp4 -t transcript.txt -o output/ --blur --burn-subtitles
+
+# Structured episode layout with center crop
+uv run viral-reel export \
+  -v episode.mp4 \
+  -t transcript.txt \
+  -o output/ \
+  --structured \
+  --episode-name mafia-tech-legends \
+  --crop-mode center \
+  --provider cursor \
+  --analysis-response analysis_response.json \
+  --metadata-response metadata_response.json
 
 # Parse transcript only
 uv run viral-reel analyze transcript.txt
@@ -117,6 +145,10 @@ print(f"Exported {result.manifest.clips_exported} clips")
 | `burn_subtitles` | `false` | Burn SRT into vertical videos |
 | `include_speaker_in_subtitles` | `true` | Speaker labels in SRT |
 | `skip_video_processing` | `false` | Skip FFmpeg (testing only) |
+| `structured_output` | `false` | Episode-style directory layout |
+| `episode_name` | video stem | Folder name under output root |
+| `vertical_crop_mode` | `reframe` | `reframe`, `center`, or `blur` |
+| `generate_candidate_windows` | `true` | Write `analysis.json` candidate windows |
 
 ## Common Errors
 

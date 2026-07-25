@@ -14,3 +14,7 @@ build/
 *.mov
 *.mkv
 output/
+.DS_Store
+episodes/**/output/
+episodes/**/export/
+episodes/**/ffmpeg

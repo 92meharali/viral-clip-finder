@@ -8,13 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from loguru import logger
-from openai import OpenAI
 from pydantic import BaseModel, Field
 
 from app.core.config import Settings, get_settings
 from app.core.exceptions import BatchExportError
-from app.llm.analyzer import analyze_transcript
-from app.llm.metadata_generator import generate_metadata
 from app.models.batch import BatchExportManifest, BatchExportResult, ExportedClipBundle
 from app.models.clip import RankedClip, ViralClip
 from app.models.export import ExtractedClip, VerticalClip
@@ -22,9 +19,17 @@ from app.models.metadata import ClipMetadata
 from app.models.quality import QualityFilterResult
 from app.models.subtitle import SubtitleFile
 from app.models.transcript import TranscriptSegment
-from app.services.clip_ranker import rank_clips
+from app.providers.base import ClipAnalyzer
+from app.providers.factory import get_clip_analyzer
+from app.services.candidate_windows import generate_candidate_windows
+from app.services.episode_layout import (
+    build_episode_layout,
+    write_analysis_artifact,
+    write_report_artifact,
+)
 from app.services.quality_checker import filter_quality_clips
 from app.services.transcript_parser import parse_transcript, parse_transcript_file
+from app.reframe.export.vertical import reframe_to_vertical
 from app.video.cropper import crop_to_vertical
 from app.video.cutter import cut_clips
 from app.video.subtitle_burner import SubtitleBurner
@@ -38,9 +43,34 @@ class BatchExportOptions(BaseModel):
     blurred_background: bool = Field(default=False, description="Use blurred background cropping")
     burn_subtitles: bool = Field(default=False, description="Burn subtitles into vertical videos")
     include_speaker_in_subtitles: bool = Field(default=True, description="Include speaker in SRT")
+    ai_provider: str | None = Field(default=None, description="AI provider override")
+    analysis_response_path: str | None = Field(
+        default=None,
+        description="Path to manual clip analysis JSON (cursor provider)",
+    )
+    metadata_response_path: str | None = Field(
+        default=None,
+        description="Path to manual metadata JSON (cursor provider)",
+    )
     skip_video_processing: bool = Field(
         default=False,
         description="Skip FFmpeg steps (for testing)",
+    )
+    vertical_crop_mode: str | None = Field(
+        default=None,
+        description="Override vertical crop mode: reframe, center, or blur",
+    )
+    structured_output: bool = Field(
+        default=False,
+        description="Use episode-style structured output directories",
+    )
+    episode_name: str | None = Field(
+        default=None,
+        description="Episode folder name when structured_output is enabled",
+    )
+    generate_candidate_windows: bool = Field(
+        default=True,
+        description="Generate candidate windows and analysis artifacts",
     )
 
 
@@ -110,16 +140,16 @@ class BatchExporter:
     def __init__(
         self,
         settings: Settings | None = None,
-        client: OpenAI | None = None,
+        analyzer: ClipAnalyzer | None = None,
     ) -> None:
         """Initialize the batch exporter.
 
         Args:
             settings: Optional settings override.
-            client: Optional OpenAI client for LLM steps.
+            analyzer: Optional AI provider override.
         """
         self.settings = settings or get_settings()
-        self._client = client
+        self._analyzer = analyzer
 
     def export(
         self,
@@ -154,24 +184,65 @@ class BatchExporter:
         transcript = Path(transcript_path).resolve()
         top_n = opts.top_n if opts.top_n is not None else self.settings.max_clips
 
+        if opts.structured_output or self.settings.batch_structured_output:
+            episode_name = opts.episode_name or video.stem
+            layout = build_episode_layout(out_dir, episode_name)
+            layout.ensure()
+            clips_dir = layout.clips
+            metadata_dir = layout.metadata
+            subtitles_dir = layout.subtitles
+            vertical_dir = layout.reframe
+            reframe_metrics_dir = layout.reframe
+        else:
+            clips_dir = out_dir
+            metadata_dir = out_dir
+            subtitles_dir = out_dir
+            vertical_dir = out_dir
+            reframe_metrics_dir = out_dir / "reframe"
+            layout = None
+            clips_dir.mkdir(parents=True, exist_ok=True)
+
         if not video.exists():
             raise BatchExportError(f"Source video not found: {video}")
         if segments is None and not transcript.exists():
             raise BatchExportError(f"Transcript file not found: {transcript}")
 
-        out_dir.mkdir(parents=True, exist_ok=True)
-        logger.info("Starting batch export: {} + {} → {}", video.name, transcript.name, out_dir)
+        clips_dir.mkdir(parents=True, exist_ok=True)
+        logger.info("Starting batch export: {} + {} → {}", video.name, transcript.name, clips_dir)
 
         parsed_segments = segments or parse_transcript_file(str(transcript))
-        analyzed = analyze_transcript(
-            parsed_segments,
-            settings=self.settings,
-            client=self._client,
-        )
-        if not analyzed:
-            raise BatchExportError("LLM analysis returned no clips")
+        candidate_windows = None
+        if opts.generate_candidate_windows:
+            candidate_windows = generate_candidate_windows(
+                parsed_segments,
+                video_path=video,
+                settings=self.settings,
+                top_n=top_n,
+            )
+            if layout is not None:
+                write_analysis_artifact(
+                    layout,
+                    segments=parsed_segments,
+                    candidate_windows=candidate_windows,
+                )
 
-        ranked = rank_clips(analyzed, parsed_segments, top_n=top_n, settings=self.settings)
+        analyzer = self._analyzer or get_clip_analyzer(
+            self.settings,
+            provider=opts.ai_provider,
+            analysis_response_path=opts.analysis_response_path,
+            metadata_response_path=opts.metadata_response_path,
+        )
+
+        logger.info("Using AI provider: {}", analyzer.provider_name)
+        analyzed = analyzer.analyze_transcript(parsed_segments)
+        if not analyzed:
+            raise BatchExportError("AI analysis returned no clips")
+
+        ranked = analyzer.rank_candidates(
+            analyzed,
+            parsed_segments,
+            top_n=top_n,
+        )
         passed, quality_report = filter_quality_clips(
             ranked, parsed_segments, settings=self.settings
         )
@@ -184,16 +255,17 @@ class BatchExporter:
         artifacts = self._process_videos(
             video,
             passed,
-            out_dir,
+            clips_dir,
             parsed_segments,
             opts=opts,
+            vertical_dir=vertical_dir,
+            reframe_metrics_dir=reframe_metrics_dir,
+            subtitles_dir=subtitles_dir,
         )
-        metadata_list = generate_metadata(
+        metadata_list = analyzer.generate_metadata_batch(
             passed,
             parsed_segments,
-            output_dir=out_dir,
-            settings=self.settings,
-            client=self._client,
+            output_dir=metadata_dir,
         )
 
         bundles = self._assemble_bundles(passed, artifacts, metadata_list)
@@ -201,7 +273,7 @@ class BatchExporter:
             BatchExportManifest(
                 source_video=str(video),
                 transcript_source=str(transcript),
-                output_dir=str(out_dir),
+                output_dir=str(layout.root if layout is not None else clips_dir),
                 clips_analyzed=len(analyzed),
                 clips_ranked=len(ranked),
                 clips_exported=len(bundles),
@@ -209,10 +281,19 @@ class BatchExporter:
                 quality_rejections=quality_report.rejected,
                 clips=bundles,
             ),
-            out_dir,
+            layout.root if layout is not None else clips_dir,
         )
 
-        logger.info("Batch export complete: {} clips → {}", len(bundles), out_dir)
+        if layout is not None:
+            write_report_artifact(
+                layout,
+                source_video=str(video),
+                transcript_source=str(transcript),
+                clips_exported=len(bundles),
+                candidate_windows=candidate_windows,
+            )
+
+        logger.info("Batch export complete: {} clips → {}", len(bundles), clips_dir)
         return BatchExportResult(manifest=manifest, metadata=metadata_list)
 
     def export_from_text(
@@ -237,27 +318,44 @@ class BatchExporter:
         self,
         video: Path,
         clips: Sequence[ViralClip],
-        out_dir: Path,
+        clips_dir: Path,
         segments: list[TranscriptSegment],
         *,
         opts: BatchExportOptions,
+        vertical_dir: Path,
+        reframe_metrics_dir: Path,
+        subtitles_dir: Path,
     ) -> _VideoArtifacts:
-        """Cut, crop, and subtitle videos unless skipped for testing."""
+        """Cut, crop/reframe, and subtitle videos unless skipped for testing."""
         if opts.skip_video_processing:
             logger.info("Skipping video processing (test mode)")
             return _VideoArtifacts(extracted=[], vertical=[], subtitles=[])
 
-        extracted = cut_clips(video, clips, output_dir=out_dir, settings=self.settings)
-        vertical = crop_to_vertical(
-            extracted,
-            output_dir=out_dir,
-            blurred_background=opts.blurred_background,
-            settings=self.settings,
-        )
+        extracted = cut_clips(video, clips, output_dir=clips_dir, settings=self.settings)
+        crop_mode = opts.vertical_crop_mode or self.settings.vertical_crop_mode
+        vertical_dir.mkdir(parents=True, exist_ok=True)
+
+        if crop_mode == "reframe":
+            vertical = reframe_to_vertical(
+                extracted,
+                output_dir=vertical_dir,
+                transcript_segments=segments,
+                metrics_dir=reframe_metrics_dir,
+                blurred_background=opts.blurred_background or self.settings.reframe_blur_background,
+                settings=self.settings,
+            )
+        else:
+            vertical = crop_to_vertical(
+                extracted,
+                output_dir=vertical_dir,
+                blurred_background=crop_mode == "blur" or opts.blurred_background,
+                settings=self.settings,
+            )
+
         subtitles = generate_subtitles(
             segments,
             extracted,
-            output_dir=out_dir,
+            output_dir=subtitles_dir,
             settings=self.settings,
             include_speaker=opts.include_speaker_in_subtitles,
         )
@@ -306,11 +404,11 @@ def run_batch_export(
     output_dir: str | Path | None = None,
     *,
     settings: Settings | None = None,
-    client: OpenAI | None = None,
+    analyzer: ClipAnalyzer | None = None,
     options: BatchExportOptions | None = None,
 ) -> BatchExportResult:
     """Convenience function to run a full batch export."""
-    return BatchExporter(settings=settings, client=client).export(
+    return BatchExporter(settings=settings, analyzer=analyzer).export(
         video_path,
         transcript_path,
         output_dir,
