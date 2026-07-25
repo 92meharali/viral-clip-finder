@@ -13,6 +13,7 @@ The project is transitioning from a CLI reel generator to a full web platform. S
 | Transcript parsing, AI analysis, ranking | Done (CLI) |
 | YouTube URL ingestion (metadata + transcript) | Done |
 | REST API | Started — health + analyze jobs |
+| Database persistence | Done — SQLite dev / PostgreSQL prod |
 | YouTube ingestion, dashboard, database | Planned |
 
 ### API server

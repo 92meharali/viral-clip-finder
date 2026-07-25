@@ -58,6 +58,16 @@ class Settings(BaseSettings):
         description="Comma-separated subtitle format preference list",
     )
 
+    database_url: str = Field(
+        default="sqlite:///./data/viral_clip_finder.db",
+        description="SQLAlchemy database URL (SQLite dev, PostgreSQL prod)",
+    )
+    database_echo: bool = Field(default=False, description="Log SQL statements")
+    database_auto_create: bool = Field(
+        default=True,
+        description="Create database tables automatically on API startup",
+    )
+
     output_dir: str = Field(default="output", description="Default directory for extracted clips")
     ffmpeg_path: str = Field(default="ffmpeg", description="Path to the ffmpeg binary")
     ffprobe_path: str = Field(default="ffprobe", description="Path to the ffprobe binary")

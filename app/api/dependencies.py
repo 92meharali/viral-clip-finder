@@ -8,7 +8,7 @@ from fastapi import Request
 
 from app.core.config import Settings, get_settings
 from app.services.analysis.service import AnalysisJobService
-from app.services.analysis.store import InMemoryAnalysisJobStore
+from app.services.analysis.store import AnalysisJobStore
 
 
 @lru_cache
@@ -17,7 +17,7 @@ def get_settings_dep() -> Settings:
     return get_settings()
 
 
-def get_job_store(request: Request) -> InMemoryAnalysisJobStore:
+def get_job_store(request: Request) -> AnalysisJobStore:
     """Return the application-scoped job store."""
     store = getattr(request.app.state, "job_store", None)
     if store is None:

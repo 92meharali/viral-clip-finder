@@ -125,7 +125,7 @@ docs/
 | 2 | YouTube ingestion service | `feat: add YouTube metadata and transcript ingestion` ✅ |
 | 3 | Analysis job model + `POST /analyze` stub | `feat: add analysis job API` ✅ |
 | 4 | Wire candidate windows to LLM pipeline | `feat: wire candidate windows to analysis` ✅ |
-| 5 | Database models (projects, clips) | `feat: add project persistence` |
+| 5 | Database models (projects, clips) | `feat: add project persistence` ✅ |
 | 6 | `GET /projects` and `GET /clips` | `feat: add project and clip list endpoints` |
 | 7 | Optional clip extraction API | `feat: add clip extraction endpoint` |
 | 8 | Next.js frontend scaffold | `feat: add Next.js frontend scaffold` |
