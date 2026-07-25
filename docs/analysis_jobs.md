@@ -72,6 +72,8 @@ While running, `stage` reports the current pipeline step:
 - `ranking`
 - `finalizing`
 
+Completed results include `llm_windows_analyzed` — the number of overlapping transcript windows sent to the LLM. See [llm_windowing.md](llm_windowing.md).
+
 ## Example
 
 ```bash

@@ -125,12 +125,14 @@ class TestSaveManifest:
 
 
 class TestBatchExporter:
+    @patch("app.services.batch_exporter.probe_duration", return_value=120.0)
     @patch("app.services.batch_exporter.filter_quality_clips")
     @patch("app.services.batch_exporter.generate_candidate_windows")
     def test_full_export_pipeline(
         self,
         mock_candidates: MagicMock,
         mock_quality: MagicMock,
+        _mock_probe: MagicMock,
         settings: Settings,
         segments: list[TranscriptSegment],
         video_file: Path,
@@ -175,6 +177,7 @@ class TestBatchExporter:
         analyzer.rank_candidates.return_value = clips
 
         with (
+            patch("app.services.batch_exporter.probe_duration", return_value=120.0),
             patch(
                 "app.services.batch_exporter.generate_candidate_windows",
                 return_value=MagicMock(windows=[], signal_count=0),
@@ -205,6 +208,7 @@ class TestBatchExporter:
                 options=BatchExportOptions(skip_video_processing=True),
             )
 
+    @patch("app.services.batch_exporter.probe_duration", return_value=120.0)
     @patch("app.services.batch_exporter.generate_subtitles")
     @patch("app.services.batch_exporter.crop_to_vertical")
     @patch("app.services.batch_exporter.cut_clips")
@@ -217,6 +221,7 @@ class TestBatchExporter:
         mock_cut: MagicMock,
         mock_crop: MagicMock,
         mock_subtitles: MagicMock,
+        _mock_probe: MagicMock,
         settings: Settings,
         segments: list[TranscriptSegment],
         video_file: Path,
@@ -291,6 +296,7 @@ class TestBatchExporter:
         mock_crop.assert_called_once()
         mock_subtitles.assert_called_once()
 
+    @patch("app.services.batch_exporter.probe_duration", return_value=120.0)
     @patch("app.services.batch_exporter.generate_subtitles")
     @patch("app.services.batch_exporter.crop_to_vertical")
     @patch("app.services.batch_exporter.cut_clips")
@@ -303,6 +309,7 @@ class TestBatchExporter:
         mock_cut: MagicMock,
         mock_crop: MagicMock,
         mock_subtitles: MagicMock,
+        _mock_probe: MagicMock,
         settings: Settings,
         segments: list[TranscriptSegment],
         video_file: Path,

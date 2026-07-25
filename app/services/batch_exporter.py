@@ -29,9 +29,11 @@ from app.services.episode_layout import (
 )
 from app.services.quality_checker import filter_quality_clips
 from app.services.transcript_parser import parse_transcript, parse_transcript_file
+from app.services.transcript_windows import analyze_transcript_with_windows
 from app.reframe.export.vertical import reframe_to_vertical
 from app.video.cropper import crop_to_vertical
 from app.video.cutter import cut_clips
+from app.video.ffmpeg import probe_duration
 from app.video.subtitle_burner import SubtitleBurner
 from app.video.subtitles import generate_subtitles
 
@@ -234,7 +236,13 @@ class BatchExporter:
         )
 
         logger.info("Using AI provider: {}", analyzer.provider_name)
-        analyzed = analyzer.analyze_transcript(parsed_segments)
+        video_duration = probe_duration(video, self.settings)
+        analyzed, _llm_windows = analyze_transcript_with_windows(
+            analyzer,
+            parsed_segments,
+            settings=self.settings,
+            total_duration_seconds=video_duration,
+        )
         if not analyzed:
             raise BatchExportError("AI analysis returned no clips")
 

@@ -443,6 +443,21 @@ class Settings(BaseSettings):
         description="Merge enrichment signals within this gap in seconds",
     )
 
+    llm_window_enabled: bool = Field(
+        default=True,
+        description="Split long transcripts into overlapping windows for LLM analysis",
+    )
+    llm_window_size_seconds: float = Field(
+        default=600.0,
+        gt=0,
+        description="Maximum transcript window size sent to the LLM in seconds",
+    )
+    llm_window_overlap_seconds: float = Field(
+        default=60.0,
+        ge=0,
+        description="Overlap between consecutive LLM transcript windows in seconds",
+    )
+
     subtitle_font: str = Field(default="Arial", description="Subtitle font for burn-in")
     subtitle_size: int = Field(default=24, ge=8, le=96, description="Subtitle font size")
     subtitle_outline: int = Field(default=2, ge=0, le=10, description="Subtitle outline thickness")

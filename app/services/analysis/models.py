@@ -78,6 +78,11 @@ class AnalysisJobResult(BaseModel):
     transcript_source: str
     transcript_segments: int = Field(..., ge=0)
     candidate_windows: int = Field(..., ge=0)
+    llm_windows_analyzed: int = Field(
+        ...,
+        ge=1,
+        description="Number of overlapping transcript windows sent to the LLM",
+    )
     clips_analyzed: int = Field(..., ge=0)
     clips_ranked: int = Field(..., ge=0)
     clips: list[ClipSummary] = Field(default_factory=list)

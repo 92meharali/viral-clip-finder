@@ -31,6 +31,7 @@ def _sample_result() -> AnalysisJobResult:
         transcript_source="manual",
         transcript_segments=42,
         candidate_windows=3,
+        llm_windows_analyzed=1,
         clips_analyzed=5,
         clips_ranked=2,
         clips=[

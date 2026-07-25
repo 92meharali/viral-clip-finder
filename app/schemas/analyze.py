@@ -82,6 +82,7 @@ class AnalysisJobResultResponse(BaseModel):
     transcript_source: str
     transcript_segments: int
     candidate_windows: int
+    llm_windows_analyzed: int
     clips_analyzed: int
     clips_ranked: int
     clips: list[ClipSummaryResponse]
@@ -99,6 +100,7 @@ class AnalysisJobResultResponse(BaseModel):
             transcript_source=result.transcript_source,
             transcript_segments=result.transcript_segments,
             candidate_windows=result.candidate_windows,
+            llm_windows_analyzed=result.llm_windows_analyzed,
             clips_analyzed=result.clips_analyzed,
             clips_ranked=result.clips_ranked,
             clips=[

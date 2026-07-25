@@ -15,6 +15,7 @@ from app.services.analysis.models import (
     ClipSummary,
 )
 from app.services.candidate_windows import generate_candidate_windows
+from app.services.transcript_windows import analyze_transcript_with_windows
 from app.services.youtube import YouTubeIngestionService
 from app.services.youtube.client import YouTubeClient
 
@@ -69,7 +70,12 @@ class AnalysisPipeline:
         self._report(on_progress, AnalysisStage.ANALYZING, "Analyzing transcript for viral moments")
         analyzer = get_clip_analyzer(self.settings, provider=resolved_provider)
         logger.info("Running analysis with provider={}", analyzer.provider_name)
-        analyzed = analyzer.analyze_transcript(segments)
+        analyzed, llm_windows = analyze_transcript_with_windows(
+            analyzer,
+            segments,
+            settings=self.settings,
+            total_duration_seconds=metadata.duration_seconds,
+        )
         if not analyzed:
             raise LLMAnalysisError("AI analysis returned no clips")
 
@@ -98,6 +104,7 @@ class AnalysisPipeline:
             transcript_source=ingestion.transcript_source,
             transcript_segments=len(segments),
             candidate_windows=len(candidate_windows.windows),
+            llm_windows_analyzed=llm_windows,
             clips_analyzed=len(analyzed),
             clips_ranked=len(ranked),
             clips=clip_summaries,
