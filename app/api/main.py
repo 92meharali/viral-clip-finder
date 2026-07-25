@@ -9,7 +9,7 @@ import uvicorn
 from fastapi import FastAPI
 from loguru import logger
 
-from app.api.routes import analyze, health
+from app.api.routes import analyze, clips, health, projects
 from app.core.config import Settings, get_settings
 from app.database.session import Database
 from app.services.analysis.sqlalchemy_store import SqlAlchemyAnalysisJobStore
@@ -81,6 +81,8 @@ def create_app(
         app.state.database = database
     app.include_router(health.router)
     app.include_router(analyze.router)
+    app.include_router(projects.router)
+    app.include_router(clips.router)
     return app
 
 

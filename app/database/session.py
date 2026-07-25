@@ -9,6 +9,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from app.core.config import Settings, get_settings
 from app.database.base import Base
@@ -35,11 +36,15 @@ def create_engine_from_settings(settings: Settings | None = None) -> Engine:
     _prepare_sqlite_path(resolved.database_url)
     is_sqlite = resolved.database_url.startswith("sqlite")
     connect_args = {"check_same_thread": False} if is_sqlite else {}
+    pool_kwargs: dict[str, object] = {}
+    if resolved.database_url == "sqlite:///:memory:":
+        pool_kwargs["poolclass"] = StaticPool
     return create_engine(
         resolved.database_url,
         echo=resolved.database_echo,
         future=True,
         connect_args=connect_args,
+        **pool_kwargs,
     )
 
 

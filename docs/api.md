@@ -50,13 +50,22 @@ Poll analysis job status and retrieve ranked clips when complete.
 
 See [analysis_jobs.md](analysis_jobs.md) for full request/response details and examples.
 
+### `GET /projects`
+
+List persisted analysis projects. See [projects_api.md](projects_api.md).
+
+### `GET /projects/{project_id}`
+
+Project detail with ranked clips.
+
+### `GET /clips`
+
+Filtered clip list. See [projects_api.md](projects_api.md).
+
 ## Planned endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/projects` | List analysis projects |
-| `GET` | `/projects/{id}` | Project detail and status |
-| `GET` | `/clips` | List clips for a project |
 | `GET` | `/report` | Download analysis report |
 | `POST` | `/extract` | Extract MP4 clips (optional) |
 

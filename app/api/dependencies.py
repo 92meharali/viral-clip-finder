@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from fastapi import Request
+from fastapi import HTTPException, Request, status
 
 from app.core.config import Settings, get_settings
+from app.database.session import Database
 from app.services.analysis.service import AnalysisJobService
 from app.services.analysis.store import AnalysisJobStore
+from app.services.projects.repository import ProjectRepository
 
 
 @lru_cache
@@ -30,3 +32,20 @@ def get_analysis_job_service(request: Request) -> AnalysisJobService:
     settings = get_settings_dep()
     store = get_job_store(request)
     return AnalysisJobService(store, settings)
+
+
+def get_database(request: Request) -> Database:
+    """Return the application database."""
+    database = getattr(request.app.state, "database", None)
+    if database is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database is not configured",
+        )
+    return database
+
+
+def get_project_repository(request: Request) -> ProjectRepository:
+    """Build a project repository for the current request."""
+    database = get_database(request)
+    return ProjectRepository(database.session_factory)
