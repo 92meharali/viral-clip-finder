@@ -36,7 +36,7 @@ Queue a new analysis job.
 | Field | Required | Description |
 |-------|----------|-------------|
 | `url` | yes | YouTube watch URL, short URL, or video ID |
-| `provider` | no | `cursor` or `openai` (defaults to `AI_PROVIDER`) |
+| `provider` | no | `cursor`, `openai`, or `gemini` (defaults to `API_AI_PROVIDER`, usually `gemini`) |
 | `top_n` | no | Maximum ranked clips to return |
 
 **Response** `202 Accepted`

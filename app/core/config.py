@@ -22,6 +22,10 @@ class Settings(BaseSettings):
         default="cursor",
         description="AI provider: cursor (manual) or openai",
     )
+    api_ai_provider: str = Field(
+        default="gemini",
+        description="Default AI provider for POST /analyze when the request omits provider",
+    )
     ai_analysis_response_path: str = Field(
         default="analysis_response.json",
         description="Path to manual clip analysis JSON for the cursor provider",
@@ -34,6 +38,19 @@ class Settings(BaseSettings):
     openai_api_key: str = Field(default="", description="OpenAI API key")
     openai_model: str = Field(default="gpt-4o", description="OpenAI model name")
     openai_temperature: float = Field(default=0.7, ge=0, le=2, description="LLM temperature")
+
+    gemini_api_key: str = Field(default="", description="Google Gemini API key")
+    gemini_model: str = Field(
+        default="gemini-2.5-flash-lite",
+        description="Gemini model name",
+    )
+    gemini_temperature: float = Field(default=0.7, ge=0, le=2, description="Gemini temperature")
+    gemini_max_retries: int = Field(
+        default=2,
+        ge=0,
+        le=5,
+        description="Retries for transient Gemini rate-limit errors",
+    )
 
     max_clips: int = Field(default=10, ge=1, description="Maximum clips to detect per analysis")
     min_clip_duration_seconds: int = Field(

@@ -20,7 +20,8 @@ uv run uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000
 | `API_PORT` | `8000` | Bind port |
 | `API_RELOAD` | `false` | Enable uvicorn auto-reload |
 | `LOG_LEVEL` | `INFO` | Logging level |
-| `AI_PROVIDER` | `cursor` | Default provider for `/analyze` jobs |
+| `AI_PROVIDER` | `cursor` | Default provider for the CLI |
+| `API_AI_PROVIDER` | `gemini` | Default provider for `POST /analyze` when `provider` is omitted |
 
 ## Endpoints
 
