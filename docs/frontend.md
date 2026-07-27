@@ -16,14 +16,44 @@ The web dashboard for Viral Clip Finder.
 
 ## Setup
 
+Node.js is **not** installed system-wide on your machine. We use a local binary at `~/.local/node-v22.12.0-darwin-arm64/`.
+
+### Option A — helper script (easiest)
+
+```bash
+# Terminal 1 — API
+uv run viral-clip-api
+
+# Terminal 2 — Website
+./frontend/dev.sh
+```
+
+### Option B — manual
+
+Add Node to your shell once (paste in Terminal):
+
+```bash
+echo 'export PATH="$HOME/.local/node-v22.12.0-darwin-arm64/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Then:
+
 ```bash
 cd frontend
-cp .env.example .env.local
-npm install
+cp .env.example .env.local   # first time only
+npm install                  # first time only
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+### If Node is missing from ~/.local
+
+```bash
+curl -fsSL https://nodejs.org/dist/v22.12.0/node-v22.12.0-darwin-arm64.tar.gz -o /tmp/node.tar.gz
+mkdir -p ~/.local && tar -xzf /tmp/node.tar.gz -C ~/.local
+```
+
+Open [http://localhost:3000](http://localhost:3000) — **not** port 8000.
 
 ## Pages
 

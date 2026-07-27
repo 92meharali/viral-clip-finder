@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from app.api.dependencies import get_analysis_job_service
 from app.api.main import create_app
+from app.core.config import Settings
 from app.services.analysis.models import (
     AnalysisJobResult,
     AnalysisJobStatus,
@@ -97,14 +98,28 @@ def analysis_service(job_store: InMemoryAnalysisJobStore) -> AnalysisJobService:
 def client(
     job_store: InMemoryAnalysisJobStore,
     analysis_service: AnalysisJobService,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> TestClient:
+    monkeypatch.setattr(
+        "app.api.routes.analyze.get_settings",
+        lambda: Settings(gemini_api_key="test-key"),
+    )
     app = create_app(job_store=job_store)
     app.dependency_overrides[get_analysis_job_service] = lambda: analysis_service
     return TestClient(app)
 
 
 class TestAnalyzeApi:
-    def test_start_analysis_returns_accepted_job(self, client: TestClient) -> None:
+    def test_start_analysis_returns_accepted_job(
+        self,
+        client: TestClient,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(
+            "app.api.routes.analyze.get_settings",
+            lambda: Settings(openai_api_key="test-key", gemini_api_key="test-key"),
+        )
+
         response = client.post(
             "/analyze",
             json={"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "provider": "openai"},
@@ -116,6 +131,51 @@ class TestAnalyzeApi:
         assert payload["video_id"] == "dQw4w9WgXcQ"
         assert payload["provider"] == "openai"
         assert payload["result"] is None
+
+    def test_start_analysis_defaults_to_api_provider(self, client: TestClient) -> None:
+        response = client.post(
+            "/analyze",
+            json={"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
+        )
+
+        assert response.status_code == 202
+        assert response.json()["provider"] == "gemini"
+
+    def test_start_analysis_without_gemini_key_returns_400(
+        self,
+        client: TestClient,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(
+            "app.api.routes.analyze.get_settings",
+            lambda: Settings(gemini_api_key=""),
+        )
+
+        response = client.post(
+            "/analyze",
+            json={"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
+        )
+
+        assert response.status_code == 400
+        assert "Gemini API key" in response.json()["detail"]
+
+    def test_start_analysis_without_openai_key_returns_400(
+        self,
+        client: TestClient,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(
+            "app.api.routes.analyze.get_settings",
+            lambda: Settings(openai_api_key=""),
+        )
+
+        response = client.post(
+            "/analyze",
+            json={"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "provider": "openai"},
+        )
+
+        assert response.status_code == 400
+        assert "OpenAI API key" in response.json()["detail"]
 
     def test_get_job_returns_completed_result(self, client: TestClient) -> None:
         created = client.post(

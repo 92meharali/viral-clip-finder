@@ -32,12 +32,25 @@ See [docs/frontend.md](docs/frontend.md).
 
 ### Frontend (website)
 
+**Use two separate terminals** — the API blocks its terminal while running.
+
 ```bash
-cd frontend && cp .env.example .env.local && npm install && npm run dev
-# Open http://localhost:3000
+# Terminal 1 — API (keep running)
+uv run viral-clip-api
+
+# Terminal 2 — Website (requires Node.js 20+ from https://nodejs.org)
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev
 ```
 
-Run the API (`uv run viral-clip-api`) in a separate terminal.
+| URL | What it is |
+|-----|------------|
+| http://localhost:3000 | **Website** (paste URL, browse clips) |
+| http://localhost:8000 | API only (`/docs`, `/analyze`, …) |
+
+Do not open port 8000 expecting the website — that 404 on `/` was the API, not the frontend.
 
 ## Status (CLI pipeline)
 

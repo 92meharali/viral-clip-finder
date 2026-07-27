@@ -100,7 +100,7 @@ def export(
     provider: str | None = typer.Option(
         None,
         "--provider",
-        help="AI provider: cursor or openai",
+        help="AI provider: cursor, openai, or gemini",
     ),
     analysis_response: Path | None = typer.Option(
         None,

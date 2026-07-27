@@ -25,10 +25,13 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function startAnalysis(url: string, provider?: string): Promise<AnalysisJob> {
+export async function startAnalysis(
+  url: string,
+  provider: string = "gemini",
+): Promise<AnalysisJob> {
   return apiFetch<AnalysisJob>("/analyze", {
     method: "POST",
-    body: JSON.stringify({ url, provider: provider || undefined }),
+    body: JSON.stringify({ url, provider }),
   });
 }
 

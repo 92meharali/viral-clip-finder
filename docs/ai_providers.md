@@ -10,12 +10,26 @@ imports OpenAI, Cursor, or any other model SDK directly.
 |----------|--------|--------------|
 | `cursor` | `app/providers/cursor_manual.py` | No |
 | `openai` | `app/providers/openai.py` | Yes (`OPENAI_API_KEY`) |
+| `gemini` | `app/providers/gemini.py` | Yes (`GEMINI_API_KEY`) |
 
 Configure the active provider in `.env`:
 
 ```bash
-AI_PROVIDER=cursor
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your-key-from-aistudio
+GEMINI_MODEL=gemini-2.5-flash-lite
 ```
+
+### Gemini quota troubleshooting
+
+If you see `429 RESOURCE_EXHAUSTED` with `limit: 0`, your API key has **no free-tier
+quota** for that model. Common fixes:
+
+1. Create a key at [Google AI Studio](https://aistudio.google.com/apikey) (keys usually start with `AIza`)
+2. Use `GEMINI_MODEL=gemini-2.5-flash-lite` (lighter model, better free-tier limits)
+3. If quota is still zero, enable billing in AI Studio — free-tier limits still apply, but Google may require a billing account on the project
+
+Transient rate limits (temporary 429s) are retried automatically.
 
 ## ClipAnalyzer interface
 

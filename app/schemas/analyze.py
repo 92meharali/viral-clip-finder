@@ -23,7 +23,7 @@ class AnalyzeRequest(BaseModel):
     url: str = Field(..., min_length=1, description="YouTube watch URL or video ID")
     provider: str | None = Field(
         default=None,
-        description="AI provider override (cursor or openai)",
+        description="AI provider override (cursor, openai, or gemini). Defaults to API_AI_PROVIDER.",
     )
     top_n: int | None = Field(
         default=None,

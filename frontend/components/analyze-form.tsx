@@ -48,7 +48,7 @@ export function AnalyzeForm() {
       </div>
       {error ? <p className="text-sm text-red-500">{error}</p> : null}
       <p className="text-sm text-muted-foreground">
-        We fetch the transcript, find viral moments with AI, and rank the best clips for your edit.
+        We fetch the transcript, find viral moments with Gemini, and rank the best clips for your edit.
       </p>
     </form>
   );

@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from app.api.routes import analyze, clips, health, projects
+from app.api.routes import analyze, clips, health, projects, root
 from app.core.config import Settings, get_settings
 from app.database.session import Database
 from app.services.analysis.sqlalchemy_store import SqlAlchemyAnalysisJobStore
@@ -92,6 +92,7 @@ def create_app(
     app.state.job_store = store
     if database is not None:
         app.state.database = database
+    app.include_router(root.router)
     app.include_router(health.router)
     app.include_router(analyze.router)
     app.include_router(projects.router)
