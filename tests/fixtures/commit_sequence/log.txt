@@ -5,3 +5,4 @@ commit 4 of 12 — test sequence for friend workflow
 commit 5 of 12 — test sequence for friend workflow
 commit 6 of 12 — test sequence for friend workflow
 commit 7 of 12 — test sequence for friend workflow
+commit 8 of 12 — test sequence for friend workflow
